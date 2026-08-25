@@ -1,0 +1,108 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageIntro from '@/components/PageIntro.astro';
+import { PLACEHOLDERS } from '@/lib/placeholders';
+
+const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+---
+
+<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Gelir aralığınız ve hane yapınıza göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu alın." noindex={!enabled}>
+  <PageIntro eyebrow="Bütçe planı" title="Kişisel bütçe dağılımınızı ve XLSX şablonunu alın" description="Üç kısa soruyu yanıtlayın; verdiğiniz bilgiler karşılığında kişiselleştirilmiş bütçe özeti ve indirilebilir tablo sunulsun." />
+  <section class="container py-12">
+    <form id="lead-form" class="mx-auto max-w-2xl space-y-9" action="/api/conversion" method="post">
+      <fieldset>
+        <legend class="mb-4 text-xl font-bold">Aylık net gelir aralığınız</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {['₺0–₺30.000', '₺30.001–₺50.000', '₺50.001–₺80.000', '₺80.001 ve üzeri'].map((value) => (
+            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="gelir_araligi" value={value} required /> {value}</label>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="mb-4 text-xl font-bold">Hane büyüklüğünüz</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {['1 kişi', '2 kişi', '3–4 kişi', '5 kişi ve üzeri'].map((value) => (
+            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hane_buyuklugu" value={value} required /> {value}</label>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="mb-4 text-xl font-bold">Öncelikli hedefiniz</legend>
+        <div class="grid gap-3">
+          {['Acil durum fonu oluşturmak', 'Harcamaları düzenlemek', 'Planlı bir gider için birikmek'].map((value) => (
+            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hedef" value={value} required /> {value}</label>
+          ))}
+        </div>
+      </fieldset>
+      <div>
+        <label class="mb-2 block font-bold" for="ad">Adınız</label>
+        <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
+      </div>
+      <fieldset>
+        <legend class="mb-3 font-bold">Size nasıl ulaşılmasını istersiniz?</legend>
+        <div class="mb-4 flex gap-6">
+          <label class="flex min-h-11 items-center gap-2"><input type="radio" name="iletisim_turu" value="eposta" checked /> E-posta</label>
+          <label class="flex min-h-11 items-center gap-2"><input type="radio" name="iletisim_turu" value="telefon" /> Telefon</label>
+        </div>
+        <div id="email-field">
+          <label class="mb-2 block font-bold" for="eposta">E-posta</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" autocomplete="email" required maxlength="160" />
+        </div>
+        <div id="phone-field" class="hidden">
+          <label class="mb-2 block font-bold" for="telefon">Telefon</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" autocomplete="tel" maxlength="30" />
+        </div>
+      </fieldset>
+      <input type="hidden" id="tblci" name="tblci" value="" />
+      <div class="absolute -left-[9999px]" aria-hidden="true"><label for="lead-website">Website</label><input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+      <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
+        <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span><a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a>'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
+        <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="transfer_consent" required /> <span>Verilerimin {PLACEHOLDERS.RECIPIENT_LEGAL_NAME} ile paylaşılmasına ve bu alıcının benimle iletişim kurmasına açık rıza veriyorum.</span></label>
+      </div>
+      <button id="lead-submit" class="min-h-12 border border-accent bg-accent px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" type="submit" disabled>Planımı oluştur</button>
+      <p id="lead-status" class="min-h-6 text-sm font-semibold" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</BaseLayout>
+
+<script is:inline define:vars={{ enabled }}>
+  document.body.dataset.conversionEvent = enabled ? 'funnel_view' : '';
+  const leadForm = document.querySelector('#lead-form');
+  const leadButton = document.querySelector('#lead-submit');
+  const leadStatus = document.querySelector('#lead-status');
+  const emailField = document.querySelector('#email-field');
+  const phoneField = document.querySelector('#phone-field');
+  const emailInput = document.querySelector('#eposta');
+  const phoneInput = document.querySelector('#telefon');
+  const tblciInput = document.querySelector('#tblci');
+  if (tblciInput instanceof HTMLInputElement) tblciInput.value = sessionStorage.getItem('tblci') || '';
+
+  function updateLeadButton() {
+    if (!(leadForm instanceof HTMLFormElement) || !(leadButton instanceof HTMLButtonElement)) return;
+    const consents = [...leadForm.querySelectorAll('input[type="checkbox"][required]')];
+    leadButton.disabled = !consents.every((input) => input instanceof HTMLInputElement && input.checked);
+  }
+  leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateLeadButton));
+  leadForm?.querySelectorAll('input[name="iletisim_turu"]').forEach((input) => input.addEventListener('change', () => {
+    const type = leadForm.querySelector('input[name="iletisim_turu"]:checked')?.value;
+    const wantsPhone = type === 'telefon';
+    emailField?.classList.toggle('hidden', wantsPhone);
+    phoneField?.classList.toggle('hidden', !wantsPhone);
+    if (emailInput instanceof HTMLInputElement) emailInput.required = !wantsPhone;
+    if (phoneInput instanceof HTMLInputElement) phoneInput.required = wantsPhone;
+  }));
+  leadForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement) || !leadForm.reportValidity()) return;
+    leadButton.disabled = true;
+    leadStatus.textContent = 'Bilgiler gönderiliyor…';
+    try {
+      const response = await fetch('/api/conversion', { method: 'POST', body: new FormData(leadForm) });
+      if (!response.ok) throw new Error('request_failed');
+      location.href = '/tesekkurler/';
+    } catch {
+      leadStatus.textContent = 'Bilgiler gönderilemedi. Lütfen daha sonra tekrar deneyin.';
+      updateLeadButton();
+    }
+  });
+</script>

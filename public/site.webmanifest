@@ -1,0 +1,16 @@
+{
+  "name": "Bütçe Pusulası",
+  "short_name": "Bütçe Pusulası",
+  "lang": "tr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCFCFA",
+  "theme_color": "#0F4C4A",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

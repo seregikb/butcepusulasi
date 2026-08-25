@@ -1,0 +1,26 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import ArticleCard from '@/components/ArticleCard.astro';
+import PageIntro from '@/components/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = (await getCollection('blog')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  return paginate(posts, { pageSize: 9 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const title = page.currentPage === 1 ? 'Tüm Yazılar' : `Yazılar — Sayfa ${page.currentPage}`;
+---
+
+<BaseLayout title={title} description="Bütçeleme, tasarruf ve finansal eğitim konularındaki tüm Bütçe Pusulası yazılarını keşfedin.">
+  <PageIntro title={title} description="Günlük para kararlarından uzun vadeli hedeflere kadar, finansal hayatınızı daha bilinçli yönetmek için hazırlanan rehberler." />
+  <section class="container grid gap-x-8 gap-y-12 py-12 md:grid-cols-2 lg:grid-cols-3">
+    {page.data.map((post) => <ArticleCard post={post} />)}
+  </section>
+  <nav class="container flex justify-between border-t border-rule pt-7" aria-label="Sayfalama">
+    {page.url.prev ? <a class="font-bold text-accent underline" href={page.url.prev}>Önceki sayfa</a> : <span></span>}
+    {page.url.next && <a class="font-bold text-accent underline" href={page.url.next}>Sonraki sayfa</a>}
+  </nav>
+</BaseLayout>

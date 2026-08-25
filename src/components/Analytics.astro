@@ -1,0 +1,60 @@
+---
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
+const taboolaId = import.meta.env.PUBLIC_TABOOLA_ID;
+const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
+---
+
+<div id="analytics-config" hidden data-ga4={ga4Id || undefined} data-taboola={taboolaId || undefined} data-meta={metaId || undefined}></div>
+
+<script is:inline>
+  (() => {
+    let loaded = false;
+    function loadAnalytics() {
+      if (loaded || localStorage.getItem('butce-pusulasi-cookie-consent') !== 'accepted') return;
+      loaded = true;
+      const config = document.querySelector('#analytics-config');
+      const ga4 = config?.getAttribute('data-ga4');
+      const taboola = config?.getAttribute('data-taboola');
+      const meta = config?.getAttribute('data-meta');
+
+      if (ga4) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4)}`;
+        document.head.append(script);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', ga4);
+      }
+      if (taboola) {
+        window._tfa = window._tfa || [];
+        window._tfa.push({ notify: 'event', name: 'page_view', id: taboola });
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = '//cdn.taboola.com/libtrc/unip/' + encodeURIComponent(taboola) + '/tfa.js';
+        document.head.append(script);
+      }
+      if (meta) {
+        window.fbq = window.fbq || function () { window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments); };
+        window.fbq.queue = [];
+        window.fbq.loaded = true;
+        window.fbq.version = '2.0';
+        window.fbq('init', meta);
+        window.fbq('track', 'PageView');
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        document.head.append(script);
+      }
+      const eventName = document.body.dataset.conversionEvent;
+      if (eventName) {
+        if (window.gtag) window.gtag('event', eventName);
+        if (window._tfa) window._tfa.push({ notify: 'event', name: eventName, id: taboola });
+        if (window.fbq) window.fbq('trackCustom', eventName);
+      }
+    }
+    loadAnalytics();
+    window.addEventListener('cookie-consent', loadAnalytics);
+  })();
+</script>

@@ -1,0 +1,15 @@
+---
+import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { PLACEHOLDERS } from '@/lib/placeholders';
+const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+---
+
+<ContentPageLayout title="Bütçe planınız hazır" description="Aylık gelir gider tablosunu indirin ve bütçe planınızın sonraki adımını görüntüleyin." noindex={!enabled}>
+  <h2>Teşekkür ederiz</h2>
+  <p><a href="/downloads/gelir-gider-tablosu.xlsx" download>12 aylık gelir gider tablosunu hemen indirin.</a></p>
+  <p>Paylaştığınız tercihlere göre bütçe dağılımınız hazırlanacak; açık rızanız kapsamında {PLACEHOLDERS.RECIPIENT_LEGAL_NAME} sizinle iletişim kurabilir.</p>
+</ContentPageLayout>
+
+<script is:inline define:vars={{ enabled }}>
+  document.body.dataset.conversionEvent = enabled ? 'lead' : '';
+</script>

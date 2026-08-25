@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from '@/components/ArticleCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { CATEGORIES, SITE } from '@/lib/site';
+
+const posts = (await getCollection('blog')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featured = posts.slice(0, 3);
+const latest = posts.slice(3, 9);
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: SITE.url,
+  inLanguage: 'tr-TR',
+};
+---
+
+<BaseLayout schema={websiteSchema}>
+  <section class="container grid gap-8 border-b border-rule py-12 md:grid-cols-[1fr_1.4fr] md:py-20">
+    <h1 class="text-5xl font-bold leading-none text-accent md:text-7xl">Bütçe Pusulası</h1>
+    <p class="max-w-xl self-end text-xl leading-8 text-muted md:text-2xl md:leading-9">
+      Paranızı daha iyi anlamanıza yardımcı olan sade, bağımsız ve uygulanabilir finansal eğitim içerikleri.
+    </p>
+  </section>
+
+  <section class="container py-14 md:py-20">
+    <div class="mb-8 flex items-end justify-between gap-4">
+      <h2 class="text-3xl font-bold md:text-4xl">Öne çıkan yazılar</h2>
+      <a class="font-bold text-accent underline underline-offset-4" href="/blog/">Tüm yazılar</a>
+    </div>
+    <div class="grid gap-10 md:grid-cols-2">
+      {featured.map((post, index) => <ArticleCard post={post} featured={index === 0} />)}
+    </div>
+  </section>
+
+  <section class="border-y border-rule bg-white py-14 md:py-20">
+    <div class="container">
+      <h2 class="text-3xl font-bold md:text-4xl">Konular</h2>
+      <div class="mt-8 grid gap-0 border-y border-rule md:grid-cols-3 md:border-0">
+        {Object.entries(CATEGORIES).map(([slug, category]) => (
+          <a href={`/kategori/${slug}/`} class="group border-b border-rule py-7 last:border-0 md:border-b-0 md:border-r md:px-7 md:first:pl-0 md:last:border-0">
+            <h3 class="text-2xl font-bold text-accent group-hover:underline">{category.name}</h3>
+            <p class="mt-3 leading-7 text-muted">{category.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="container py-14 md:py-20">
+    <h2 class="text-3xl font-bold md:text-4xl">Son yazılar</h2>
+    <div class="mt-8 grid gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+      {latest.map((post) => <ArticleCard post={post} />)}
+    </div>
+  </section>
+</BaseLayout>

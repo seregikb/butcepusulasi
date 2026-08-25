@@ -1,0 +1,7 @@
+[build]
+command = "corepack enable && pnpm build"
+publish = "dist"
+
+[build.environment]
+NODE_VERSION = "20"
+PNPM_VERSION = "10.15.0"

@@ -1,0 +1,26 @@
+---
+import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { PLACEHOLDERS } from '@/lib/placeholders';
+---
+
+<ContentPageLayout title="KVKK Aydınlatma Metni" description="Bütçe planı formunda işlenen kişisel veriler, amaçlar, hukuki sebepler, alıcılar, saklama süresi ve KVKK hakları hakkında bilgi alın.">
+  <p><strong>Son güncelleme: 25 Ağustos 2026</strong></p>
+  <p>6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri sorumlusu <strong>{PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME}</strong>, VERBİS numarası <strong>{PLACEHOLDERS.DATA_CONTROLLER_VERBIS_NO}</strong> olan gerçek veya tüzel kişidir.</p>
+
+  <h2>İşlenen veri kategorileri</h2>
+  <p>Bütçe planı formunda ad, seçiminize göre e-posta veya telefon, aylık net gelir aralığı, hane büyüklüğü, temel finansal hedef ve varsa reklam tıklama tanımlayıcısı <code>tblci</code> işlenir. Kesin maaş, TC Kimlik Numarası, doğum tarihi, banka veya kimlik bilgisi toplanmaz.</p>
+
+  <h2>Amaç ve hukuki sebep</h2>
+  <p>Veriler <strong>{PLACEHOLDERS.LEAD_PURPOSE_TR}</strong> amacıyla, KVKK Madde 5 kapsamındaki açık rızanıza ve uygulanabildiği ölçüde talebiniz üzerine gerekli işlem süreçlerine dayanarak işlenir. Formdaki iki onay ayrı ayrı alınır ve önceden işaretlenmez.</p>
+
+  <h2>Alıcı ve aktarım</h2>
+  <p>Açık rıza vermeniz hâlinde verileriniz, <strong>{PLACEHOLDERS.RECIPIENT_ADDRESS}</strong> adresindeki <strong>{PLACEHOLDERS.RECIPIENT_LEGAL_NAME}</strong> ile sizinle iletişime geçebilmesi amacıyla paylaşılabilir. KVKK başvuruları için alıcı iletişim adresi <strong>{PLACEHOLDERS.RECIPIENT_KVKK_CONTACT_EMAIL}</strong> olarak tamamlanacaktır.</p>
+
+  <h2>Saklama süresi ve yöntem</h2>
+  <p>Form verileri elektronik yöntemle doğrudan sizden alınır ve <strong>{PLACEHOLDERS.RETENTION_PERIOD_TR}</strong> boyunca saklanır. Süre sonunda yasal yükümlülük bulunmadıkça silinir, yok edilir veya anonim hâle getirilir.</p>
+
+  <h2>KVKK Madde 11 hakları</h2>
+  <p>Kişisel verilerinizin işlenip işlenmediğini öğrenme; işlenmişse bilgi talep etme; amacını ve uygun kullanılıp kullanılmadığını öğrenme; aktarılan kişileri bilme; yanlış veya eksik veriyi düzelttirme; şartları varsa silme veya yok etme; bu işlemlerin üçüncü kişilere bildirilmesini isteme; otomatik analiz sonucuna itiraz etme ve hukuka aykırı işleme nedeniyle zararın giderilmesini isteme haklarına sahipsiniz.</p>
+
+  <p>Başvurunuzu kimliğinizi doğrulamaya imkân veren yöntemle <strong>{PLACEHOLDERS.RECIPIENT_KVKK_CONTACT_EMAIL}</strong> adresine iletebilirsiniz.</p>
+</ContentPageLayout>

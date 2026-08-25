@@ -1,0 +1,20 @@
+---
+import PageIntro from '@/components/PageIntro.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  eyebrow?: string;
+  noindex?: boolean;
+}
+
+const { title, description, eyebrow, noindex = false } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <PageIntro {eyebrow} {title} {description} />
+  <div class="container py-12 md:py-16">
+    <div class="prose"><slot /></div>
+  </div>
+</BaseLayout>

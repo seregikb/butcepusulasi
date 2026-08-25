@@ -1,0 +1,30 @@
+<div id="cookie-banner" class="fixed inset-x-0 bottom-0 z-[80] hidden border-t border-rule bg-paper p-4" role="dialog" aria-label="Çerez tercihleri" aria-live="polite">
+  <div class="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <p class="m-0 max-w-2xl text-sm leading-6 text-muted">
+      Zorunlu çerezlerin yanında, yalnızca izninizle analiz ve reklam ölçüm araçlarını kullanırız.
+      <a class="font-semibold text-accent underline" href="/cerez-politikasi/">Çerez Politikası</a>
+    </p>
+    <div class="grid grid-cols-2 gap-3">
+      <button data-cookie-choice="rejected" type="button" class="min-h-11 border border-accent px-5 py-2 font-bold text-accent">Reddet</button>
+      <button data-cookie-choice="accepted" type="button" class="min-h-11 border border-accent bg-accent px-5 py-2 font-bold text-white">Kabul Et</button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const key = 'butce-pusulasi-cookie-consent';
+    const banner = document.querySelector('#cookie-banner');
+    const choice = localStorage.getItem(key);
+    if (!choice) banner?.classList.remove('hidden');
+    document.querySelectorAll('[data-cookie-choice]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const value = button.getAttribute('data-cookie-choice');
+        if (!value) return;
+        localStorage.setItem(key, value);
+        banner?.classList.add('hidden');
+        window.dispatchEvent(new CustomEvent('cookie-consent', { detail: value }));
+      });
+    });
+  })();
+</script>

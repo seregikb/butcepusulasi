@@ -1,0 +1,25 @@
+---
+import { coverSvg } from '@/lib/cover-art';
+import type { Category } from '@/lib/site';
+
+interface Props {
+  slug: string;
+  category: Category;
+  alt?: string;
+}
+
+const { slug, category, alt = '' } = Astro.props;
+const titleId = alt ? `cover-title-${slug}` : '';
+const title = alt ? `<title id="${titleId}">${alt}</title>` : '';
+const svg = coverSvg(slug, category, titleId)
+  .replace('<svg ', '<svg class="h-full w-full" ')
+  .replace('xmlns="http://www.w3.org/2000/svg">', `xmlns="http://www.w3.org/2000/svg">${title}`);
+---
+
+<div class="cover-art overflow-hidden" set:html={svg}></div>
+
+<style>
+  .cover-art {
+    aspect-ratio: 16 / 9;
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import CoverArt from './CoverArt.astro';
+import { CATEGORIES } from '@/lib/site';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  featured?: boolean;
+}
+
+const { post, featured = false } = Astro.props;
+const date = post.data.pubDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<article class:list={['group border-t border-rule pt-5', featured && 'md:col-span-2']}>
+  <a href={`/blog/${post.id}/`} class="block no-underline">
+    <CoverArt slug={post.id} category={post.data.category} alt={post.data.heroImageAlt} />
+    <div class="mt-5 flex items-center gap-3 text-sm">
+      <span class="font-bold text-accent">{CATEGORIES[post.data.category].name}</span>
+      <time class="text-muted" datetime={post.data.pubDate.toISOString()}>{date}</time>
+    </div>
+    <h2 class:list={['mt-2 font-bold leading-tight group-hover:text-accent', featured ? 'text-3xl md:text-4xl' : 'text-2xl']}>
+      {post.data.title}
+    </h2>
+    <p class="mt-3 text-base leading-7 text-muted">{post.data.description}</p>
+  </a>
+</article>

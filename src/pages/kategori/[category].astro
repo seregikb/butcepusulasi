@@ -1,0 +1,22 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import ArticleCard from '@/components/ArticleCard.astro';
+import PageIntro from '@/components/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { CATEGORIES, type Category } from '@/lib/site';
+
+export const getStaticPaths = (async () => Object.keys(CATEGORIES).map((category) => ({ params: { category } }))) satisfies GetStaticPaths;
+
+const category = Astro.params.category as Category;
+const meta = CATEGORIES[category];
+const posts = (await getCollection('blog', ({ data }) => data.category === category))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title={meta.name} description={meta.description}>
+  <PageIntro eyebrow="Kategori" title={meta.name} description={meta.description} />
+  <section class="container grid gap-x-8 gap-y-12 py-12 md:grid-cols-2 lg:grid-cols-3">
+    {posts.map((post) => <ArticleCard post={post} />)}
+  </section>
+</BaseLayout>
