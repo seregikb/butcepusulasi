@@ -4,8 +4,8 @@ description: "Çocuklara parayı korkutmadan anlatın; okul öncesinden ergenli�
 category: "finansal-egitim"
 pubDate: 2026-08-05
 readingTime: 8
-heroImage: "cover:cocuklara-para-egitimi"
-heroImageAlt: "Yaşa göre gelişen para becerilerini gösteren geometrik öğrenme yolu"
+heroImage: "/images/articles/cocuklara-para-egitimi.webp"
+heroImageAlt: "Evde meyveler ve bozuk paralarla para kavramını öğrenen çocuk ve babası"
 faq:
   - q: "Çocuğa harçlık vermeye kaç yaşında başlanmalı?"
     a: "Tek bir doğru yaş yoktur. Çocuk temel sayıları ve seçim fikrini anladığında küçük, düzenli ve yaşına uygun bir tutarla başlanabilir."

@@ -4,8 +4,8 @@ description: "Acil durum fonunuz için gerçekçi hedef belirleyin; zorunlu gide
 category: "butceleme"
 pubDate: 2026-08-10
 readingTime: 7
-heroImage: "cover:acil-durum-fonu"
-heroImageAlt: "Acil durum birikiminin büyümesini gösteren geometrik bütçe sütunları"
+heroImage: "/images/articles/acil-durum-fonu.webp"
+heroImageAlt: "Yağmurlu bir günde acil durum birikimine para ayıran adam"
 faq:
   - q: "Acil durum fonu kaç aylık olmalı?"
     a: "Yaygın başlangıç aralığı üç ila altı aylık zorunlu giderdir; ancak gelir istikrarı, hanedeki kazanan sayısı ve sağlık koşulları hedefi değiştirir."

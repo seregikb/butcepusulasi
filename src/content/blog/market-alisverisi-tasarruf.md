@@ -4,8 +4,8 @@ description: "Market bütçesini küçültmeden önce israfı ve plansız alıml
 category: "tasarruf"
 pubDate: 2026-08-10
 readingTime: 7
-heroImage: "cover:market-alisverisi-tasarruf"
-heroImageAlt: "Market harcamalarında tasarrufu simgeleyen iç içe geometrik yaylar"
+heroImage: "/images/articles/market-alisverisi-tasarruf.webp"
+heroImageAlt: "Semt pazarında alışveriş listesini kontrol ederek sebze seçen kadın"
 faq:
   - q: "Her zaman en ucuz ürünü almak tasarruf sağlar mı?"
     a: "Hayır. Birim fiyat, kullanım miktarı, kalite ve ürünün bozulmadan tüketilip tüketilemeyeceği birlikte değerlendirilmelidir."

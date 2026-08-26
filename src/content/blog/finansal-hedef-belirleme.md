@@ -4,8 +4,8 @@ description: "Finansal hedeflerinizi SMART yöntemiyle somutlaştırın; tutar, 
 category: "finansal-egitim"
 pubDate: 2026-08-18
 readingTime: 10
-heroImage: "cover:finansal-hedef-belirleme"
-heroImageAlt: "Finansal hedefe giden yükselen geometrik yol"
+heroImage: "/images/articles/finansal-hedef-belirleme.webp"
+heroImageAlt: "Ev hedefini planlama panosuna yerleştiren kadın"
 faq:
   - q: "Aynı anda kaç finansal hedef belirlenmeli?"
     a: "Çoğu kişi için bir ana hedef ve bir küçük yan hedef yeterlidir. Çok sayıda hedef, aylık katkıyı inceltip ilerleme hissini azaltabilir."

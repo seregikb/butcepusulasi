@@ -4,8 +4,8 @@ description: "Kredi kartı ekstresindeki dönem borcu, son ödeme tarihi, asgari
 category: "finansal-egitim"
 pubDate: 2026-08-05
 readingTime: 8
-heroImage: "cover:kredi-karti-ekstresi-okuma"
-heroImageAlt: "Ekstre satırlarını ve ödeme akışını gösteren geometrik çizgi grafiği"
+heroImage: "/images/articles/kredi-karti-ekstresi-okuma.webp"
+heroImageAlt: "Kredi kartı ekstresini birlikte inceleyen yaşlı çift"
 faq:
   - q: "Dönem borcu ile güncel borç aynı mıdır?"
     a: "Her zaman değil. Dönem borcu hesap kesim tarihine kadar ekstreye giren işlemleri, güncel borç ise kesimden sonraki yeni işlemleri de içerebilir."

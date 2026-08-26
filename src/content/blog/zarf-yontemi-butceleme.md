@@ -4,8 +4,8 @@ description: "Zarf yöntemiyle değişken harcamalara sınır koyun. Nakit veya 
 category: "butceleme"
 pubDate: 2026-08-18
 readingTime: 10
-heroImage: "cover:zarf-yontemi-butceleme"
-heroImageAlt: "Farklı harcama gruplarına ayrılmış geometrik bütçe sütunları"
+heroImage: "/images/articles/zarf-yontemi-butceleme.webp"
+heroImageAlt: "Evde harcama bütçesini kağıt zarflara ayıran kadın"
 faq:
   - q: "Zarf yöntemi için mutlaka nakit kullanmak gerekir mi?"
     a: "Hayır. Ayrı banka alt hesapları, ön ödemeli hesaplar veya bir bütçe tablosundaki sanal bakiyeler dijital zarf olarak kullanılabilir."

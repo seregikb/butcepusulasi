@@ -4,8 +4,8 @@ description: "Finansal okuryazarlığın bütçe, tasarruf, borç ve risk kararl
 category: "finansal-egitim"
 pubDate: 2026-08-21
 readingTime: 11
-heroImage: "cover:finansal-okuryazarlik-nedir"
-heroImageAlt: "Finansal bilgide ilerlemeyi gösteren çizgi ve düzenli noktalar"
+heroImage: "/images/articles/finansal-okuryazarlik-nedir.webp"
+heroImageAlt: "Kütüphane kafede hesap belgesi ve notlarını inceleyen genç adam"
 faq:
   - q: "Finansal okuryazarlık yalnızca yatırım bilgisi midir?"
     a: "Hayır. Geliri planlamak, faturaları takip etmek, borç koşullarını anlamak, dolandırıcılıktan korunmak ve risklere hazırlanmak da finansal okuryazarlığın temel parçalarıdır."

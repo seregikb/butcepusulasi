@@ -1,22 +1,31 @@
 ---
-import { coverSvg } from '@/lib/cover-art';
-import type { Category } from '@/lib/site';
-
 interface Props {
   slug: string;
-  category: Category;
   alt?: string;
+  eager?: boolean;
 }
 
-const { slug, category, alt = '' } = Astro.props;
-const titleId = alt ? `cover-title-${slug}` : '';
-const title = alt ? `<title id="${titleId}">${alt}</title>` : '';
-const svg = coverSvg(slug, category, titleId)
-  .replace('<svg ', '<svg class="h-full w-full" ')
-  .replace('xmlns="http://www.w3.org/2000/svg">', `xmlns="http://www.w3.org/2000/svg">${title}`);
+const { slug, alt = '', eager = false } = Astro.props;
+const imageBase = `/images/articles/${slug}`;
 ---
 
-<div class="cover-art overflow-hidden" set:html={svg}></div>
+<picture class="cover-art block overflow-hidden bg-surface">
+  <source
+    type="image/webp"
+    srcset={`${imageBase}-720.webp 720w, ${imageBase}.webp 1440w`}
+    sizes="(min-width: 1024px) 820px, (min-width: 768px) 50vw, 100vw"
+  />
+  <img
+    src={`${imageBase}.webp`}
+    width="1440"
+    height="810"
+    alt={alt}
+    class="h-full w-full object-cover"
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : 'auto'}
+    decoding="async"
+  />
+</picture>
 
 <style>
   .cover-art {

@@ -62,7 +62,7 @@ const faqSchema = post.data.faq ? {
         <time datetime={post.data.pubDate.toISOString()}>{date}</time><span aria-hidden="true">·</span>
         <span>{post.data.readingTime} dakika okuma</span>
       </div>
-      <div class="mt-9"><CoverArt slug={post.id} category={post.data.category} alt={post.data.heroImageAlt} /></div>
+      <div class="mt-9"><CoverArt slug={post.id} alt={post.data.heroImageAlt} eager /></div>
     </div>
     <div class="prose mx-auto mt-10">
       <Content />

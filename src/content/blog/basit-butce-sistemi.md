@@ -4,8 +4,8 @@ description: "Karmaşık tablolar olmadan üç adımda basit bir aylık bütçe 
 category: "butceleme"
 pubDate: 2026-08-24
 readingTime: 7
-heroImage: "cover:basit-butce-sistemi"
-heroImageAlt: "Üç aşamalı bütçe planını temsil eden geometrik sütunlar"
+heroImage: "/images/articles/basit-butce-sistemi.webp"
+heroImageAlt: "Mutfak masasında birlikte aylık bütçe hazırlayan çift"
 faq:
   - q: "Bütçe yapmak için uygulama kullanmak gerekir mi?"
     a: "Hayır. Bir kâğıt, telefon notu veya basit hesap tablosu yeterlidir. Önemli olan yöntemi her ay aynı şekilde sürdürebilmektir."

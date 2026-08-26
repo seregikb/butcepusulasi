@@ -14,7 +14,7 @@ const date = post.data.pubDate.toLocaleDateString('tr-TR', { day: 'numeric', mon
 
 <article class:list={['group border-t border-rule pt-5', featured && 'md:col-span-2']}>
   <a href={`/blog/${post.id}/`} class="block no-underline">
-    <CoverArt slug={post.id} category={post.data.category} alt={post.data.heroImageAlt} />
+    <CoverArt slug={post.id} alt={post.data.heroImageAlt} eager={featured} />
     <div class="mt-5 flex items-center gap-3 text-sm">
       <span class="font-bold text-accent">{CATEGORIES[post.data.category].name}</span>
       <time class="text-muted" datetime={post.data.pubDate.toISOString()}>{date}</time>

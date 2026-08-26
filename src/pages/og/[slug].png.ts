@@ -3,7 +3,12 @@ import { getCollection } from 'astro:content';
 import { Resvg } from '@resvg/resvg-js';
 import { readFile } from 'node:fs/promises';
 import satori from 'satori';
-import { coverSvg } from '@/lib/cover-art';
+
+const coverImages = import.meta.glob('../../assets/article-og/*.jpg', {
+  eager: true,
+  import: 'default',
+  query: '?inline',
+}) as Record<string, string>;
 
 export const getStaticPaths = (async () => {
   const posts = await getCollection('blog');
@@ -16,16 +21,18 @@ export async function GET({ props }: { props: { post: Awaited<ReturnType<typeof 
     readFile(new URL('../../../assets/fonts/NotoSans-Regular.ttf', import.meta.url)),
     readFile(new URL('../../../assets/fonts/NotoSans-Bold.ttf', import.meta.url)),
   ]);
-  const background = `data:image/svg+xml,${encodeURIComponent(coverSvg(post.id, post.data.category))}`;
+  const background = coverImages[`../../assets/article-og/${post.id}.jpg`];
   const svg = await satori({
     type: 'div',
     props: {
-      style: { width: '1200px', height: '630px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '64px 72px', color: '#1A1A1A', fontFamily: 'Noto Sans', position: 'relative', overflow: 'hidden' },
+      style: { width: '1200px', height: '630px', display: 'flex', color: '#FFFFFF', backgroundColor: '#102B29', fontFamily: 'Noto Sans', position: 'relative', overflow: 'hidden' },
       children: [
-        { type: 'img', props: { src: background, width: 1200, height: 675, style: { position: 'absolute', inset: 0, width: '1200px', height: '675px' } } },
-        { type: 'div', props: { style: { position: 'absolute', inset: 0, backgroundColor: '#FCFCFA', opacity: 0.82 } } },
-        { type: 'div', props: { style: { display: 'flex', color: '#0F4C4A', fontSize: '28px', fontWeight: 700, marginBottom: '24px' }, children: 'Bütçe Pusulası' } },
-        { type: 'div', props: { style: { display: 'flex', maxWidth: '1020px', fontSize: '58px', fontWeight: 700, lineHeight: 1.12 }, children: post.data.title } },
+        { type: 'img', props: { src: background, width: 1200, height: 630, style: { position: 'absolute', left: 0, top: 0, width: '1200px', height: '630px', objectFit: 'cover' } } },
+        { type: 'div', props: { style: { position: 'absolute', left: 0, top: 0, width: '1200px', height: '630px', backgroundColor: '#102B29', opacity: 0.5 } } },
+        { type: 'div', props: { style: { position: 'absolute', left: '72px', bottom: '64px', width: '1056px', display: 'flex', flexDirection: 'column' }, children: [
+          { type: 'div', props: { style: { display: 'flex', color: '#FFFFFF', fontSize: '28px', fontWeight: 700, marginBottom: '24px' }, children: 'Bütçe Pusulası' } },
+          { type: 'div', props: { style: { display: 'flex', maxWidth: '1020px', fontSize: '58px', fontWeight: 700, lineHeight: 1.12 }, children: post.data.title } },
+        ] } },
       ],
     },
   }, { width: 1200, height: 630, fonts: [

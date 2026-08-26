@@ -4,8 +4,8 @@ description: "Unutulan dijital abonelikleri banka hareketleri ve cihaz hesaplar�
 category: "tasarruf"
 pubDate: 2026-08-13
 readingTime: 7
-heroImage: "cover:gizli-abonelikler"
-heroImageAlt: "Tekrarlanan abonelik ödemelerini temsil eden geometrik halkalar"
+heroImage: "/images/articles/gizli-abonelikler.webp"
+heroImageAlt: "Telefonundan aboneliklerini kontrol edip not alan kadın"
 faq:
   - q: "Ücretsiz deneme ne zaman iptal edilmeli?"
     a: "Hizmeti sürdürme kararınız yoksa kaydolduğunuz gün takvime bitişten en az iki gün önce hatırlatma ekleyin ve iptal koşullarını kontrol edin."
