@@ -1,5 +1,6 @@
 ---
 title: "Maaş Gelmeden Biten Para: Çoğu Kişinin Fark Etmediği 7 Harcama"
+shortTitle: "Maaş Gelmeden Biten Para: 7 Gizli Harcama"
 description: "Maaş dönemini zorlayan yedi görünmez harcama türünü bulun; küçük ve tekrarlanan ödemeleri gerçekçi yöntemlerle kontrol altına alın."
 category: "tasarruf"
 pubDate: 2026-08-21

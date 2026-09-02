@@ -1,5 +1,6 @@
 ---
 title: "Aylık Gelir Gider Tablosu: Ücretsiz Şablon ve Kullanım Rehberi"
+shortTitle: "Aylık Gelir Gider Tablosu: Ücretsiz Şablon"
 description: "Ücretsiz aylık gelir gider tablosunu indirin; 12 aylık sayfalar, otomatik toplamlar ve özet alanıyla bütçenizi adım adım takip edin."
 category: "butceleme"
 pubDate: 2026-08-13

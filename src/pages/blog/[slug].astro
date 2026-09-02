@@ -50,7 +50,7 @@ const faqSchema = post.data.faq ? {
 } : null;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} image={`/og/${post.id}.png`} type="article" schema={[articleSchema, breadcrumbSchema, ...(faqSchema ? [faqSchema] : [])]}>
+<BaseLayout title={post.data.title} shortTitle={post.data.shortTitle} description={post.data.description} image={`/og/${post.id}.png`} type="article" schema={[articleSchema, breadcrumbSchema, ...(faqSchema ? [faqSchema] : [])]}>
   <article class="container py-10 md:py-14">
     <div class="mx-auto max-w-[820px]">
       <Breadcrumbs items={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Yazılar', href: '/blog/' }, { label: post.data.title }]} />

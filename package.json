@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/check-placeholders.mjs && node scripts/generate-assets.mjs && astro sync --force",
+    "prebuild": "node scripts/check-placeholders.mjs && node scripts/check-seo.mjs && node scripts/generate-assets.mjs && astro sync --force",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run"

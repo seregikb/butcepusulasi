@@ -1,5 +1,6 @@
 ---
 title: "Farkında Olmadan Ödediğiniz Abonelikler: Nasıl Tespit Edilir?"
+shortTitle: "Unutulan Abonelikler Nasıl Tespit Edilir?"
 description: "Unutulan dijital abonelikleri banka hareketleri ve cihaz hesaplarından bulun; iptal tarihlerini takip ederek tekrarlayan giderleri azaltın."
 category: "tasarruf"
 pubDate: 2026-08-13

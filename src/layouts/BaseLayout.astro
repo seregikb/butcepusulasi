@@ -8,6 +8,7 @@ import '@/styles/global.css';
 
 interface Props {
   title?: string;
+  shortTitle?: string;
   description?: string;
   image?: string;
   type?: 'website' | 'article';
@@ -17,14 +18,14 @@ interface Props {
 
 const {
   title = SITE.name,
+  shortTitle,
   description = SITE.description,
   image = '/og/default.png',
   type = 'website',
   noindex = false,
   schema = [],
 } = Astro.props;
-const titleCandidate = title === SITE.name ? title : `${title} | ${SITE.name}`;
-const pageTitle = titleCandidate.length <= 60 ? titleCandidate : `${title.slice(0, 57).trimEnd()}…`;
+const pageTitle = shortTitle ?? title;
 const canonical = new URL(Astro.url.pathname, SITE.url);
 const imageUrl = new URL(image, SITE.url);
 const organization = {

@@ -1,5 +1,6 @@
 ---
 title: "Basit Bütçe Sistemi: 3 Adımda Harcamalarınızı Kontrol Altına Alın"
+shortTitle: "Basit Bütçe Sistemi: 3 Adımda Harcama Kontrolü"
 description: "Karmaşık tablolar olmadan üç adımda basit bir aylık bütçe kurun; gelirinizi, zorunlu giderleri ve harcama sınırlarını netleştirin."
 category: "butceleme"
 pubDate: 2026-08-24
@@ -81,8 +82,6 @@ Ay sonunda market ₺8.900, kişisel harcama ₺6.100 ve faturalar ₺3.300 ger�
 Bu örneğin amacı aynı tutarları kullanmak değil, her sapmanın nereden karşılandığını göstermektir. Bir kategori değiştiğinde bütün planı bırakmak yerine kalan tutarlar yeniden dağıtılır.
 
 İkinci ay için yalnızca doğrulanmış farkları değiştirin. Tek seferlik sağlık ödemesini kalıcı gider saymayın; üç ay boyunca yüksek gelen market tutarını ise eski tahmine zorlamayın. Gelir aynı kaldığı için bir kategori yükselirse başka bir bölümün azalması gerektiğini açıkça yazın. Bütçe toplamının her zaman net gelire eşit olması, görünmeyen açığın yeni borç olarak oluşmasını engeller.
-
-Planı kısa tutun.
 
 ## Sık Sorulan Sorular
 
