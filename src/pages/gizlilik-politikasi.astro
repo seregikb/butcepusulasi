@@ -1,5 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { CONTACT } from '@/data/contact';
 import { PLACEHOLDERS } from '@/lib/placeholders';
 ---
 
@@ -22,5 +23,5 @@ import { PLACEHOLDERS } from '@/lib/placeholders';
   <h2>KVKK Madde 11 kapsamındaki haklarınız</h2>
   <p>6698 sayılı Kanun'un 11. maddesi kapsamında kişisel verilerinizin işlenip işlenmediğini öğrenme; işlenmişse bilgi talep etme; işleme amacını ve amaca uygun kullanılıp kullanılmadığını öğrenme; aktarılan üçüncü kişileri bilme; eksik veya yanlış verinin düzeltilmesini isteme; şartları oluştuğunda silme veya yok etme talep etme; düzeltme ve silme işlemlerinin aktarılan kişilere bildirilmesini isteme; yalnızca otomatik sistem sonucuna itiraz etme ve hukuka aykırı işleme nedeniyle zararın giderilmesini talep etme haklarına sahipsiniz.</p>
 
-  <p>Talepler kimlik doğrulamasına imkân veren yöntemle yukarıda belirtilecek KVKK iletişim adresine gönderilebilir. Ayrıca genel sorular için <a href="mailto:info@butcepusulasi.com">info@butcepusulasi.com</a> adresini kullanabilirsiniz.</p>
+  <p>Talepler kimlik doğrulamasına imkân veren yöntemle yukarıda belirtilecek KVKK iletişim adresine gönderilebilir. Ayrıca genel sorular için <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> adresini kullanabilirsiniz.</p>
 </ContentPageLayout>

@@ -1,5 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { CONTACT } from '@/data/contact';
 ---
 
 <ContentPageLayout title="Kullanım Koşulları" description="Bütçe Pusulası içeriklerinin eğitim amacı, sorumluluk sınırları, fikri haklar ve site kullanım kuralları hakkında bilgi edinin.">
@@ -19,5 +20,5 @@ import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
   <p>Site tasarımı ve özgün metinler üzerindeki haklar saklıdır. Kısa alıntılar kaynak ve bağlantı belirtilerek kullanılabilir. İçeriklerin tamamının izinsiz çoğaltılması, otomatik biçimde yeniden yayımlanması veya yanıltıcı bağlamda kullanılması yasaktır.</p>
 
   <h2>Değişiklik ve iletişim</h2>
-  <p>Bu koşullar teknik, editoryal veya hukuki ihtiyaçlarla güncellenebilir. Güncel tarih sayfanın başında gösterilir. Sorular için <a href="mailto:info@butcepusulasi.com">info@butcepusulasi.com</a> adresine ulaşabilirsiniz.</p>
+  <p>Bu koşullar teknik, editoryal veya hukuki ihtiyaçlarla güncellenebilir. Güncel tarih sayfanın başında gösterilir. Sorular için <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> adresine ulaşabilirsiniz.</p>
 </ContentPageLayout>

@@ -3,6 +3,7 @@ import Analytics from '@/components/Analytics.astro';
 import CookieBanner from '@/components/CookieBanner.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
+import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
 import { SITE } from '@/lib/site';
 import '@/styles/global.css';
 
@@ -34,6 +35,12 @@ const organization = {
   name: SITE.name,
   url: SITE.url,
   logo: `${SITE.url}/favicon.svg`,
+  telephone: CONTACT.phoneHref,
+  email: CONTACT.email,
+  address: {
+    '@type': 'PostalAddress',
+    ...CONTACT_POSTAL_ADDRESS,
+  },
 };
 const schemas = [organization, ...(Array.isArray(schema) ? schema : [schema])];
 const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';

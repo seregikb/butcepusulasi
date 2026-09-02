@@ -1,9 +1,10 @@
 ---
 import { SITE } from '@/lib/site';
+import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
 ---
 
 <footer class="mt-24 border-t border-rule py-12">
-  <div class="container grid gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
+  <div class="container grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.4fr]">
     <div>
       <a href="/" class="text-xl font-bold text-accent">{SITE.name}</a>
       <p class="mt-3 max-w-sm leading-7 text-muted">Bütçe yönetimi ve finansal okuryazarlık üzerine bağımsız editoryal içerikler.</p>
@@ -24,6 +25,17 @@ import { SITE } from '@/lib/site';
         <li><a class="hover:text-accent" href="/kullanim-kosullari/">Kullanım Koşulları</a></li>
       </ul>
     </nav>
+    <section aria-labelledby="footer-contact-heading" itemscope itemtype="https://schema.org/Organization">
+      <p id="footer-contact-heading" class="mb-3 font-bold">İletişim</p>
+      <address class="space-y-2 not-italic text-muted">
+        <p><a class="hover:text-accent" href={`tel:${CONTACT.phoneHref}`} itemprop="telephone">{CONTACT.phoneDisplay}</a></p>
+        <p><a class="hover:text-accent" href={`mailto:${CONTACT.email}`} itemprop="email">{CONTACT.email}</a></p>
+        <p itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+          {CONTACT.addressLines.map((line) => <span class="block">{line}</span>)}
+          {Object.entries(CONTACT_POSTAL_ADDRESS).map(([property, content]) => <meta itemprop={property} content={content} />)}
+        </p>
+      </address>
+    </section>
   </div>
   <div class="container mt-10 border-t border-rule pt-6 text-sm text-muted">
     <p>© {new Date().getFullYear()} {SITE.name}. Bu sitedeki içerikler finansal danışmanlık niteliği taşımaz.</p>

@@ -1,5 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
 ---
 
 <ContentPageLayout title="Hakkımızda" description="Bütçe Pusulası'nın yayın yaklaşımı, bağımsızlığı ve kişisel finans eğitimine bakışı hakkında bilgi edinin.">
@@ -17,5 +18,18 @@ import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
 
   <p>Bütçe Pusulası'nın amacı, okuyucunun kendi sorularını daha iyi kurmasına ve temel seçenekleri anlamasına yardımcı olmaktır. Eğitim içeriği, kişisel durumun tamamını bilen yetkili bir uzmanın değerlendirmesinin yerini tutmaz. Hukuki, vergisel veya kişiye özel finansal kararlar için ilgili alanda yetkili uzmanlara ve resmî kurumlara başvurulmalıdır.</p>
 
-  <p>Reklam veya ölçüm teknolojileri kullanıldığında bunlar içerik kararlarımızdan ayrı tutulur ve gerekli çerezler dışında kullanıcının tercihi olmadan çalıştırılmaz. Kişisel veri ve çerez uygulamalarımızı ilgili politika sayfalarında açıklarız. Bize <a href="mailto:info@butcepusulasi.com">info@butcepusulasi.com</a> adresinden ulaşabilirsiniz.</p>
+  <p>Reklam veya ölçüm teknolojileri kullanıldığında bunlar içerik kararlarımızdan ayrı tutulur ve gerekli çerezler dışında kullanıcının tercihi olmadan çalıştırılmaz. Kişisel veri ve çerez uygulamalarımızı ilgili politika sayfalarında açıklarız.</p>
+
+  <section itemscope itemtype="https://schema.org/Organization">
+    <h2>İletişim bilgileri</h2>
+    <address class="not-italic">
+      <p><strong>Telefon:</strong> <a href={`tel:${CONTACT.phoneHref}`} itemprop="telephone">{CONTACT.phoneDisplay}</a></p>
+      <p><strong>E-posta:</strong> <a href={`mailto:${CONTACT.email}`} itemprop="email">{CONTACT.email}</a></p>
+      <p itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+        <strong>Adres:</strong><br />
+        {CONTACT.addressLines.map((line) => <span class="block">{line}</span>)}
+        {Object.entries(CONTACT_POSTAL_ADDRESS).map(([property, content]) => <meta itemprop={property} content={content} />)}
+      </p>
+    </address>
+  </section>
 </ContentPageLayout>

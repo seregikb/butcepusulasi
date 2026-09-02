@@ -1,5 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { CONTACT } from '@/data/contact';
 ---
 
 <ContentPageLayout title="Çerez Politikası" description="Bütçe Pusulası'nda kullanılan zorunlu, analiz ve reklam ölçüm teknolojileri ile çerez tercihlerinizi nasıl yöneteceğinizi öğrenin.">
@@ -16,5 +17,5 @@ import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
   <p>Tarayıcınızın site verileri bölümünden butcepusulasi.com kayıtlarını silebilirsiniz. Kayıt silindiğinde tercih penceresi bir sonraki ziyarette yeniden gösterilir. Tarayıcı ayarlarıyla üçüncü taraf çerezleri ayrıca sınırlandırabilirsiniz; bu işlem sitenin temel içeriklerini okumayı engellemez.</p>
 
   <h2>İletişim</h2>
-  <p>Çerez ve kişisel veri uygulamalarına ilişkin sorular için <a href="mailto:info@butcepusulasi.com">info@butcepusulasi.com</a> adresine yazabilirsiniz. Veri sorumlusu ve KVKK başvuru bilgileri yayından önce Gizlilik Politikası'ndaki açık token alanlarına eklenecektir.</p>
+  <p>Çerez ve kişisel veri uygulamalarına ilişkin sorular için <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> adresine yazabilirsiniz. Veri sorumlusu ve KVKK başvuru bilgileri yayından önce Gizlilik Politikası'ndaki açık token alanlarına eklenecektir.</p>
 </ContentPageLayout>

@@ -1,5 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
+import { CONTACT } from '@/data/contact';
 ---
 
 <ContentPageLayout title="Editör Ekibi" description="Bütçe Pusulası içeriklerini hazırlayan editoryal ekibin çalışma ilkeleri ve yayın süreci hakkında bilgi alın.">
@@ -13,5 +14,5 @@ import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
 
   <h2>Düzeltmeler</h2>
 
-  <p>Bir yazıda maddi hata, çalışmayan bağlantı veya güncelliğini yitirmiş veri fark ederseniz <a href="mailto:info@butcepusulasi.com">info@butcepusulasi.com</a> adresine sayfa bağlantısıyla birlikte yazabilirsiniz. Uygun düzeltmeler editoryal incelemenin ardından içeriğe yansıtılır ve gerekli olduğunda güncellenme tarihi belirtilir.</p>
+  <p>Bir yazıda maddi hata, çalışmayan bağlantı veya güncelliğini yitirmiş veri fark ederseniz <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> adresine sayfa bağlantısıyla birlikte yazabilirsiniz. Uygun düzeltmeler editoryal incelemenin ardından içeriğe yansıtılır ve gerekli olduğunda güncellenme tarihi belirtilir.</p>
 </ContentPageLayout>

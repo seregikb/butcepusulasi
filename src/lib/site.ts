@@ -2,7 +2,6 @@ export const SITE = {
   name: 'Bütçe Pusulası',
   domain: 'butcepusulasi.com',
   url: 'https://butcepusulasi.com',
-  email: 'info@butcepusulasi.com',
   description: 'Bütçe yönetimi, tasarruf ve finansal okuryazarlık üzerine sade, bağımsız ve uygulanabilir rehberler.',
 } as const;
 
