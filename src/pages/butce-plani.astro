@@ -6,7 +6,7 @@ import { PLACEHOLDERS } from '@/lib/placeholders';
 const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 ---
 
-<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Gelir aralığınız ve hane yapınıza göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu alın." noindex={!enabled}>
+<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Gelir aralığınız ve hane yapınıza göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu alın." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
   <PageIntro eyebrow="Bütçe planı" title="Kişisel bütçe dağılımınızı ve XLSX şablonunu alın" description="Üç kısa soruyu yanıtlayın; verdiğiniz bilgiler karşılığında kişiselleştirilmiş bütçe özeti ve indirilebilir tablo sunulsun." />
   <section class="container py-12">
     <form id="lead-form" class="mx-auto max-w-2xl space-y-9" action="/api/conversion" method="post">

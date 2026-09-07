@@ -7,12 +7,21 @@ import CoverArt from '@/components/CoverArt.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { CATEGORIES, SITE } from '@/lib/site';
 
+const trafficArticles = new Set([
+  'basit-butce-sistemi',
+  'maas-gelmeden-biten-para',
+  'gizli-abonelikler',
+  'market-alisverisi-tasarruf',
+  'acil-durum-fonu',
+]);
+
 export const getStaticPaths = (async () => {
   const posts = await getCollection('blog');
   return posts.map((post) => ({ params: { slug: post.id }, props: { post, posts } }));
 }) satisfies GetStaticPaths;
 
 const { post, posts } = Astro.props;
+const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 const { Content } = await render(post);
 const related = post.data.relatedPosts
   .map((id: string) => posts.find((entry: typeof post) => entry.id === id))
@@ -66,6 +75,9 @@ const faqSchema = post.data.faq ? {
     </div>
     <div class="prose mx-auto mt-10">
       <Content />
+      {funnelEnabled && trafficArticles.has(post.id) && (
+        <p><a href="/butce-plani/">Kişisel bütçe planınızı ve XLSX şablonunu görüntüleyin.</a></p>
+      )}
     </div>
   </article>
 
