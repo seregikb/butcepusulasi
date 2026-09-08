@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+.honeypot-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 @font-face {
   font-family: "Source Sans 3 Variable";
   src: url("@fontsource-variable/source-sans-3/files/source-sans-3-latin-ext-wght-normal.woff2") format("woff2-variations");

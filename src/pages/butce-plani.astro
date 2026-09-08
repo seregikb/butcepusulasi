@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import HoneypotField from '@/components/HoneypotField.astro';
 import PageIntro from '@/components/PageIntro.astro';
 import { PLACEHOLDERS } from '@/lib/placeholders';
 
@@ -54,7 +55,7 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
         </div>
       </fieldset>
       <input type="hidden" id="tblci" name="tblci" value="" />
-      <div class="absolute -left-[9999px]" aria-hidden="true"><label for="lead-website">Website</label><input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+      <HoneypotField />
       <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
         <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span><a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a>'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
         <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="transfer_consent" required /> <span>Verilerimin {PLACEHOLDERS.RECIPIENT_LEGAL_NAME} ile paylaşılmasına ve bu alıcının benimle iletişim kurmasına açık rıza veriyorum.</span></label>
