@@ -1,0 +1,12 @@
+---
+import { CONTACT } from '@/data/contact';
+
+interface Props {
+  class?: string;
+  itemprop?: string;
+}
+
+const { class: className, itemprop } = Astro.props;
+---
+
+<!--email_off--><a class={className} href={`mailto:${CONTACT.email}`} itemprop={itemprop}>{CONTACT.email}</a><!--/email_off-->

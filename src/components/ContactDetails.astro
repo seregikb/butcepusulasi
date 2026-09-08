@@ -1,0 +1,36 @@
+---
+import EmailLink from '@/components/EmailLink.astro';
+import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
+
+interface Props {
+  compact?: boolean;
+  class?: string;
+  linkClass?: string;
+}
+
+const {
+  compact = false,
+  class: className,
+  linkClass = 'text-accent underline',
+} = Astro.props;
+---
+
+<address class:list={['not-italic', className]} itemscope itemtype="https://schema.org/Organization">
+  <dl class:list={[compact ? 'space-y-2' : 'space-y-4']}>
+    <div>
+      <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>Telefon</dt>
+      <dd><a class={linkClass} href={`tel:${CONTACT.phoneHref}`} itemprop="telephone">{CONTACT.phoneDisplay}</a></dd>
+    </div>
+    <div>
+      <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>E-posta</dt>
+      <dd><EmailLink class={linkClass} itemprop="email" /></dd>
+    </div>
+    <div>
+      <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>Adres</dt>
+      <dd itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+        {CONTACT.addressLines.map((line) => <div>{line}</div>)}
+        {Object.entries(CONTACT_POSTAL_ADDRESS).map(([property, content]) => <meta itemprop={property} content={content} />)}
+      </dd>
+    </div>
+  </dl>
+</address>

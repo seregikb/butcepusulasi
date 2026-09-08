@@ -1,6 +1,6 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
-import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
+import ContactDetails from '@/components/ContactDetails.astro';
 ---
 
 <ContentPageLayout title="Hakkımızda" description="Bütçe Pusulası'nın yayın yaklaşımı, bağımsızlığı ve kişisel finans eğitimine bakışı hakkında bilgi edinin.">
@@ -20,16 +20,8 @@ import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
 
   <p>Reklam veya ölçüm teknolojileri kullanıldığında bunlar içerik kararlarımızdan ayrı tutulur ve gerekli çerezler dışında kullanıcının tercihi olmadan çalıştırılmaz. Kişisel veri ve çerez uygulamalarımızı ilgili politika sayfalarında açıklarız.</p>
 
-  <section itemscope itemtype="https://schema.org/Organization">
+  <section>
     <h2>İletişim bilgileri</h2>
-    <address class="not-italic">
-      <p><strong>Telefon:</strong> <a href={`tel:${CONTACT.phoneHref}`} itemprop="telephone">{CONTACT.phoneDisplay}</a></p>
-      <p><strong>E-posta:</strong> <a href={`mailto:${CONTACT.email}`} itemprop="email">{CONTACT.email}</a></p>
-      <p itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
-        <strong>Adres:</strong><br />
-        {CONTACT.addressLines.map((line) => <span class="block">{line}</span>)}
-        {Object.entries(CONTACT_POSTAL_ADDRESS).map(([property, content]) => <meta itemprop={property} content={content} />)}
-      </p>
-    </address>
+    <ContactDetails />
   </section>
 </ContentPageLayout>
