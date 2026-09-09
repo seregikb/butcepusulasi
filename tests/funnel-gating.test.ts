@@ -7,9 +7,11 @@ const root = process.cwd();
 const dist = join(root, 'dist');
 const astroCli = join(root, 'node_modules/astro/astro.js');
 const funnelRoutes = ['aydinlatma-metni', 'butce-plani', 'tesekkurler'];
+const publicRoutes = ['gizlilik-politikasi', 'iletisim'];
 
 interface BuildState {
   routeHtml: Record<string, string>;
+  publicHtml: Record<string, string>;
   sitemap: string;
   rss: string;
   anchorPages: Record<string, string[]>;
@@ -44,6 +46,7 @@ function build(enabled: boolean): BuildState {
 
   return {
     routeHtml: Object.fromEntries(funnelRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
+    publicHtml: Object.fromEntries(publicRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
     sitemap,
     rss: readFileSync(join(dist, 'rss.xml'), 'utf8'),
     anchorPages,
@@ -66,6 +69,10 @@ describe('lead funnel route gating', () => {
       expect(disabled.rss).not.toContain(`/${route}/`);
       expect(disabled.anchorPages[route]).toEqual([]);
     }
+    for (const route of publicRoutes) {
+      expect(disabled.publicHtml[route]).not.toContain('<meta name="robots"');
+      expect(disabled.sitemap).toContain(`/${route}/`);
+    }
   });
 
   it('indexes enabled routes and links from exactly five articles', () => {
@@ -73,6 +80,10 @@ describe('lead funnel route gating', () => {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
       expect(enabled.rss).not.toContain(`/${route}/`);
+    }
+    for (const route of publicRoutes) {
+      expect(enabled.publicHtml[route]).not.toContain('<meta name="robots"');
+      expect(enabled.sitemap).toContain(`/${route}/`);
     }
     expect(enabled.anchorPages['butce-plani']).toHaveLength(5);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(new Set([

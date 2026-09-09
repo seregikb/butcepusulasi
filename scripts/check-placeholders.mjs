@@ -55,8 +55,6 @@ for (const root of ['src/components', 'src/layouts']) {
 }
 
 const noindexedRoutes = new Set(enabled ? [] : funnelRoutes);
-if (routeMatches.some(({ route }) => route === '/gizlilik-politikasi/')) noindexedRoutes.add('/gizlilik-politikasi/');
-if (routeMatches.some(({ route }) => route === '/iletisim/')) noindexedRoutes.add('/iletisim/');
 
 const indexedFailures = routeMatches.filter(({ route }) => !noindexedRoutes.has(route));
 const format = ({ route, path, token }) => `${route} (${path}) ${token}`;

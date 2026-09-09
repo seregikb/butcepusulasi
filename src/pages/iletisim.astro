@@ -3,13 +3,11 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageIntro from '@/components/PageIntro.astro';
 import ContactDetails from '@/components/ContactDetails.astro';
 import HoneypotField from '@/components/HoneypotField.astro';
-import { PLACEHOLDERS } from '@/lib/placeholders';
 
-const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || PLACEHOLDERS.FORM_ENDPOINT;
-const hasUnresolvedEndpoint = /\{\{[A-Z0-9_]+\}\}/.test(endpoint);
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
 ---
 
-<BaseLayout title="İletişim" description="Bütçe Pusulası editör ekibine içerik soruları, düzeltme bildirimleri ve genel görüşleriniz için ulaşın." noindex={hasUnresolvedEndpoint}>
+<BaseLayout title="İletişim" description="Bütçe Pusulası editör ekibine içerik soruları, düzeltme bildirimleri ve genel görüşleriniz için ulaşın.">
   <PageIntro title="İletişim" description="İçeriklerle ilgili görüş, düzeltme bildirimi veya genel sorularınız için bize yazabilirsiniz." />
   <section class="container grid gap-12 py-12 md:grid-cols-[1fr_1.4fr] md:py-16">
     <div>
@@ -51,7 +49,7 @@ const hasUnresolvedEndpoint = /\{\{[A-Z0-9_]+\}\}/.test(endpoint);
       return;
     }
     const endpoint = form.dataset.endpoint || '';
-    if (!endpoint || endpoint.includes('{{')) {
+    if (!endpoint) {
       status.textContent = 'Form geçici olarak kullanılamıyor. Lütfen e-posta adresimizi kullanın.';
       return;
     }

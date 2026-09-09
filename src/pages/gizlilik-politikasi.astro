@@ -1,18 +1,11 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
 import EmailLink from '@/components/EmailLink.astro';
-import { PLACEHOLDERS } from '@/lib/placeholders';
-
-const hasUnresolvedPlaceholders = [
-  PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME,
-  PLACEHOLDERS.RECIPIENT_ADDRESS,
-  PLACEHOLDERS.RECIPIENT_KVKK_CONTACT_EMAIL,
-].some((value) => /\{\{[A-Z0-9_]+\}\}/.test(value));
 ---
 
-<ContentPageLayout title="Gizlilik Politikası" description="Bütçe Pusulası'nın kişisel verileri, iletişim kayıtlarını, analiz araçlarını ve KVKK kapsamındaki hakları nasıl ele aldığını öğrenin." noindex={hasUnresolvedPlaceholders}>
+<ContentPageLayout title="Gizlilik Politikası" description="Bütçe Pusulası'nın kişisel verileri, iletişim kayıtlarını, analiz araçlarını ve KVKK kapsamındaki hakları nasıl ele aldığını öğrenin.">
   <p><strong>Son güncelleme: 25 Ağustos 2026</strong></p>
-  <p>Bu politika, butcepusulasi.com ziyaretleri sırasında hangi verilerin hangi amaçlarla işlenebileceğini açıklar. Veri sorumlusu bilgileri yayından önce <strong>{PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME}</strong> ve <strong>{PLACEHOLDERS.RECIPIENT_ADDRESS}</strong> alanlarıyla tamamlanacaktır. KVKK talepleri için iletişim adresi <strong>{PLACEHOLDERS.RECIPIENT_KVKK_CONTACT_EMAIL}</strong> olarak güncellenecektir.</p>
+  <p>Bu politika, butcepusulasi.com ziyaretleri sırasında hangi verilerin hangi amaçlarla işlenebileceğini açıklar. Veri sorumlusu ve KVKK başvuru bilgileri, ilgili bilgiler kesinleştiğinde bu sayfada güncellenecektir.</p>
 
   <h2>İşlenebilecek veriler</h2>
   <p>İletişim formunu kullandığınızda ad, e-posta adresi, mesaj içeriği ve spam önleme amacıyla teknik kayıtlar işlenebilir. Site ziyareti sırasında IP adresi, tarayıcı türü, cihaz bilgisi, ziyaret edilen sayfa ve zaman bilgisi sunucu güvenliği kapsamında geçici olarak kaydedilebilir.</p>
