@@ -6,13 +6,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 const root = process.cwd();
 const dist = join(root, 'dist');
 const astroCli = join(root, 'node_modules/astro/astro.js');
-const funnelRoutes = ['butce-plani', 'tesekkurler'];
+const funnelRoutes = ['aydinlatma-metni', 'butce-plani', 'tesekkurler'];
 
 interface BuildState {
   routeHtml: Record<string, string>;
   sitemap: string;
   rss: string;
-  anchorPages: string[];
+  anchorPages: Record<string, string[]>;
 }
 
 function walk(dir: string): string[] {
@@ -35,12 +35,12 @@ function build(enabled: boolean): BuildState {
     .filter((path) => /sitemap.*\.xml$/.test(path))
     .map((path) => readFileSync(path, 'utf8'))
     .join('\n');
-  const anchorPages = htmlFiles.flatMap((path) => {
+  const anchorPages = Object.fromEntries(funnelRoutes.map((route) => [route, htmlFiles.flatMap((path) => {
     const html = readFileSync(path, 'utf8');
     const links = [...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)]
-      .filter((match) => funnelRoutes.some((route) => match[1] === `/${route}/`));
+      .filter((match) => match[1] === `/${route}/`);
     return links.map(() => relative(dist, path));
-  });
+  })]));
 
   return {
     routeHtml: Object.fromEntries(funnelRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
@@ -64,22 +64,25 @@ describe('lead funnel route gating', () => {
       expect(disabled.routeHtml[route]).toContain('<meta name="robots" content="noindex, nofollow">');
       expect(disabled.sitemap).not.toContain(`/${route}/`);
       expect(disabled.rss).not.toContain(`/${route}/`);
+      expect(disabled.anchorPages[route]).toEqual([]);
     }
-    expect(disabled.anchorPages).toEqual([]);
   });
 
   it('indexes enabled routes and links from exactly five articles', () => {
     for (const route of funnelRoutes) {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
+      expect(enabled.rss).not.toContain(`/${route}/`);
     }
-    expect(enabled.anchorPages).toHaveLength(5);
-    expect(new Set(enabled.anchorPages)).toEqual(new Set([
+    expect(enabled.anchorPages['butce-plani']).toHaveLength(5);
+    expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(new Set([
       'blog/acil-durum-fonu/index.html',
       'blog/basit-butce-sistemi/index.html',
       'blog/gizli-abonelikler/index.html',
       'blog/maas-gelmeden-biten-para/index.html',
       'blog/market-alisverisi-tasarruf/index.html',
     ]));
+    expect(enabled.anchorPages['aydinlatma-metni']).toEqual(['butce-plani/index.html']);
+    expect(enabled.anchorPages.tesekkurler).toEqual([]);
   });
 });

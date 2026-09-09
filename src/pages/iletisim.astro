@@ -6,9 +6,10 @@ import HoneypotField from '@/components/HoneypotField.astro';
 import { PLACEHOLDERS } from '@/lib/placeholders';
 
 const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || PLACEHOLDERS.FORM_ENDPOINT;
+const hasUnresolvedEndpoint = /\{\{[A-Z0-9_]+\}\}/.test(endpoint);
 ---
 
-<BaseLayout title="İletişim" description="Bütçe Pusulası editör ekibine içerik soruları, düzeltme bildirimleri ve genel görüşleriniz için ulaşın.">
+<BaseLayout title="İletişim" description="Bütçe Pusulası editör ekibine içerik soruları, düzeltme bildirimleri ve genel görüşleriniz için ulaşın." noindex={hasUnresolvedEndpoint}>
   <PageIntro title="İletişim" description="İçeriklerle ilgili görüş, düzeltme bildirimi veya genel sorularınız için bize yazabilirsiniz." />
   <section class="container grid gap-12 py-12 md:grid-cols-[1fr_1.4fr] md:py-16">
     <div>

@@ -1,9 +1,11 @@
 ---
 import ContentPageLayout from '@/layouts/ContentPageLayout.astro';
 import { PLACEHOLDERS } from '@/lib/placeholders';
+
+const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 ---
 
-<ContentPageLayout title="KVKK Aydınlatma Metni" description="Bütçe planı formunda işlenen kişisel veriler, amaçlar, hukuki sebepler, alıcılar, saklama süresi ve KVKK hakları hakkında bilgi alın.">
+<ContentPageLayout title="KVKK Aydınlatma Metni" description="Bütçe planı formunda işlenen kişisel veriler, amaçlar, hukuki sebepler, alıcılar, saklama süresi ve KVKK hakları hakkında bilgi alın." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
   <p><strong>Son güncelleme: 25 Ağustos 2026</strong></p>
   <p>6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri sorumlusu <strong>{PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME}</strong>, VERBİS numarası <strong>{PLACEHOLDERS.DATA_CONTROLLER_VERBIS_NO}</strong> olan gerçek veya tüzel kişidir.</p>
 
