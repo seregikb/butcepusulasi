@@ -1,6 +1,6 @@
 export const CONTACT = {
-  phoneDisplay: '+90 (530) 072 01 10',
-  phoneHref: '+905300720110',
+  phoneDisplay: '+90 (530) 072 01 01',
+  phoneHref: '+905300720101',
   email: 'info@butcepusulasi.com',
   addressLines: [
     'Adnan Kahveci Mah., Çamlıtepe Sok. No: 24',

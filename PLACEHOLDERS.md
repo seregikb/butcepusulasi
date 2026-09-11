@@ -15,3 +15,4 @@ Do not enable the lead funnel until every token is replaced with reviewed legal 
 | `{{CONVERSION_API_ENDPOINT}}` | Server-to-server lead destination | Cloudflare Pages Function stub | Engineering / recipient |
 
 The canonical token values live in `src/lib/placeholders.ts`; the conversion endpoint token also remains in `functions/api/conversion.ts`. With `PUBLIC_LEAD_FUNNEL_ENABLED=true`, `scripts/check-placeholders.mjs` exits with code 1 and reports every unresolved token location.
+
