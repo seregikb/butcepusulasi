@@ -76,9 +76,11 @@ const renderTaboola = Boolean(taboolaId && taboolaEvent);
           loaded = true;
           window._tfa = window._tfa || [];
           window._tfa.push({ notify: 'event', name: eventName, id });
+          if (document.getElementById('tb_tfa_script')) return;
           const script = document.createElement('script');
           script.async = true;
           script.src = '//cdn.taboola.com/libtrc/unip/' + encodeURIComponent(id) + '/tfa.js';
+          script.id = 'tb_tfa_script';
           document.head.append(script);
         }
         loadTaboola();
