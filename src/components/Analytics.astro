@@ -1,10 +1,22 @@
 ---
+import { GATED_ROUTE_SET } from '@/data/gated-routes';
+
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 const taboolaId = import.meta.env.PUBLIC_TABOOLA_ID;
 const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
+const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+const pathname = Astro.url.pathname;
+const taboolaEvent = GATED_ROUTE_SET.has(pathname)
+  ? funnelEnabled && pathname === '/butce-plani/'
+    ? 'step_1'
+    : funnelEnabled && pathname === '/tesekkurler/'
+      ? 'lead'
+      : undefined
+  : 'page_view';
+const renderTaboola = Boolean(taboolaId && taboolaEvent);
 ---
 
-<div id="analytics-config" hidden data-ga4={ga4Id || undefined} data-taboola={taboolaId || undefined} data-meta={metaId || undefined}></div>
+<div id="analytics-config" hidden data-ga4={ga4Id || undefined} data-meta={metaId || undefined}></div>
 
 <script is:inline>
   (() => {
@@ -14,7 +26,6 @@ const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
       loaded = true;
       const config = document.querySelector('#analytics-config');
       const ga4 = config?.getAttribute('data-ga4');
-      const taboola = config?.getAttribute('data-taboola');
       const meta = config?.getAttribute('data-meta');
 
       if (ga4) {
@@ -26,14 +37,6 @@ const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
         window.gtag = function () { window.dataLayer.push(arguments); };
         window.gtag('js', new Date());
         window.gtag('config', ga4);
-      }
-      if (taboola) {
-        window._tfa = window._tfa || [];
-        window._tfa.push({ notify: 'event', name: 'page_view', id: taboola });
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = '//cdn.taboola.com/libtrc/unip/' + encodeURIComponent(taboola) + '/tfa.js';
-        document.head.append(script);
       }
       if (meta) {
         window.fbq = window.fbq || function () { window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments); };
@@ -50,7 +53,6 @@ const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
       const eventName = document.body.dataset.conversionEvent;
       if (eventName) {
         if (window.gtag) window.gtag('event', eventName);
-        if (window._tfa) window._tfa.push({ notify: 'event', name: eventName, id: taboola });
         if (window.fbq) window.fbq('trackCustom', eventName);
       }
     }
@@ -58,3 +60,30 @@ const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
     window.addEventListener('cookie-consent', loadAnalytics);
   })();
 </script>
+
+{renderTaboola && (
+  <Fragment>
+    <div id="taboola-config" hidden data-taboola={taboolaId} data-event={taboolaEvent}></div>
+    <script is:inline>
+      (() => {
+        let loaded = false;
+        function loadTaboola() {
+          if (loaded || localStorage.getItem('butce-pusulasi-cookie-consent') !== 'accepted') return;
+          const config = document.querySelector('#taboola-config');
+          const id = config?.getAttribute('data-taboola');
+          const eventName = config?.getAttribute('data-event');
+          if (!id || !eventName) return;
+          loaded = true;
+          window._tfa = window._tfa || [];
+          window._tfa.push({ notify: 'event', name: eventName, id });
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = '//cdn.taboola.com/libtrc/unip/' + encodeURIComponent(id) + '/tfa.js';
+          document.head.append(script);
+        }
+        loadTaboola();
+        window.addEventListener('cookie-consent', loadTaboola);
+      })();
+    </script>
+  </Fragment>
+)}

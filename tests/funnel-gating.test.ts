@@ -12,6 +12,7 @@ const publicRoutes = ['gizlilik-politikasi', 'iletisim'];
 interface BuildState {
   routeHtml: Record<string, string>;
   publicHtml: Record<string, string>;
+  articleHtml: string;
   sitemap: string;
   rss: string;
   anchorPages: Record<string, string[]>;
@@ -27,7 +28,11 @@ function walk(dir: string): string[] {
 function build(enabled: boolean): BuildState {
   execFileSync(process.execPath, [astroCli, 'build'], {
     cwd: root,
-    env: { ...process.env, PUBLIC_LEAD_FUNNEL_ENABLED: String(enabled) },
+    env: {
+      ...process.env,
+      PUBLIC_LEAD_FUNNEL_ENABLED: String(enabled),
+      PUBLIC_TABOOLA_ID: 'test-taboola-id',
+    },
     stdio: 'pipe',
   });
 
@@ -47,6 +52,7 @@ function build(enabled: boolean): BuildState {
   return {
     routeHtml: Object.fromEntries(funnelRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
     publicHtml: Object.fromEntries(publicRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
+    articleHtml: readFileSync(join(dist, 'blog', 'basit-butce-sistemi', 'index.html'), 'utf8'),
     sitemap,
     rss: readFileSync(join(dist, 'rss.xml'), 'utf8'),
     anchorPages,
@@ -73,6 +79,9 @@ describe('lead funnel route gating', () => {
       expect(disabled.publicHtml[route]).not.toContain('<meta name="robots"');
       expect(disabled.sitemap).toContain(`/${route}/`);
     }
+    expect(disabled.articleHtml).toContain('data-event="page_view"');
+    expect(disabled.articleHtml).toContain('cdn.taboola.com/libtrc/unip/');
+    for (const route of funnelRoutes) expect(disabled.routeHtml[route]).not.toContain('cdn.taboola.com/libtrc/unip/');
   });
 
   it('indexes enabled routes and links from exactly five articles', () => {
@@ -85,6 +94,10 @@ describe('lead funnel route gating', () => {
       expect(enabled.publicHtml[route]).not.toContain('<meta name="robots"');
       expect(enabled.sitemap).toContain(`/${route}/`);
     }
+    expect(enabled.articleHtml).toContain('data-event="page_view"');
+    expect(enabled.routeHtml['butce-plani']).toContain('data-event="step_1"');
+    expect(enabled.routeHtml.tesekkurler).toContain('data-event="lead"');
+    expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('cdn.taboola.com/libtrc/unip/');
     expect(enabled.anchorPages['butce-plani']).toHaveLength(5);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(new Set([
       'blog/acil-durum-fonu/index.html',
