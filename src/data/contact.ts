@@ -2,6 +2,8 @@ export const CONTACT = {
   phoneDisplay: '+90 (530) 072 01 01',
   phoneHref: '+905300720101',
   email: 'info@butcepusulasi.com',
+  companyTitle: 'Pusula Profesyonel Site Ve Tesis Yönetimi Hizmetleri Limited Şirketi',
+  taxId: '7341053155',
   addressLines: [
     'Adnan Kahveci Mah., Çamlıtepe Sok. No: 24',
     '34528 Beylikdüzü / İstanbul',

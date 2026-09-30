@@ -26,6 +26,14 @@ const {
       <dd><EmailLink class={linkClass} itemprop="email" /></dd>
     </div>
     <div>
+      <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>Şirket Ünvanı</dt>
+      <dd itemprop="legalName">Şirket Ünvanı: {CONTACT.companyTitle}</dd>
+    </div>
+    <div>
+      <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>Vergi Kimlik No</dt>
+      <dd>Vergi Kimlik No: {CONTACT.taxId}</dd>
+    </div>
+    <div>
       <dt class:list={[compact ? 'sr-only' : 'font-bold text-ink']}>Adres</dt>
       <dd itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
         {CONTACT.addressLines.map((line) => <div>{line}</div>)}

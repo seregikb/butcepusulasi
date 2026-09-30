@@ -20,7 +20,7 @@ relatedPosts:
 
 Market harcaması temel ihtiyaçtır, ancak tutarın tamamı değiştirilemez değildir. Plansız küçük alışverişler, kullanılmadan bozulan gıdalar ve yalnızca kampanya nedeniyle alınan ürünler aynı fişte görünür. Amaç beslenme kalitesini düşürmek değil, ödediğiniz ürünün gerçekten kullanılmasını sağlamaktır.
 
-TÜİK'in Temmuz 2026 verisinde gıda ve alkolsüz içeceklerde yıllık fiyat artışı yüzde 37,53 olarak açıklanmıştır. Fiyatların hızlı değiştiği ortamda eski bütçeyi zorla korumak yerine satın alma biçimini ve güncel tutarı birlikte gözden geçirmek gerekir.
+Örnek olarak gıda ve alkolsüz içeceklerde yıllık fiyat artışının yüzde 37,53 olduğu bir dönemde, eski bütçeyi zorla korumak yerine satın alma biçimini ve güncel tutarı birlikte gözden geçirmek gerekir.
 
 ## Market bütçesi neden aşılır?
 
@@ -110,4 +110,3 @@ Yalnızca düzenli kullandığınız, saklama alanınız bulunan ve son kullanma
 
 Dokuz yöntemin hepsini aynı hafta uygulamak gerekmez. Stok kontrolü, liste ve israf kaydıyla başlayın. Gerçek tasarruf yalnızca kasada daha az ödemek değil, alınan ürünün tamamından yararlanmaktır.
 
-**Kaynak:** [TÜİK Temmuz 2026 Tüketici Fiyat Endeksi](https://veriportali.tuik.gov.tr/tr/press/58297).

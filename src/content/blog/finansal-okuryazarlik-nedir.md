@@ -18,7 +18,7 @@ relatedPosts:
   - "finansal-hedef-belirleme"
 ---
 
-Finansal okuryazarlık, para hakkında çok sayıda terim bilmekten daha geniş bir beceridir. Geliri planlama, seçeneklerin maliyetini karşılaştırma, riskleri fark etme ve alınan kararların gelecekteki etkisini değerlendirme kapasitesini kapsar. TCMB Terimler Sözlüğü de kavramı, bireyin kişisel bütçesini yönetirken etkin ve bilinçli karar almasını sağlayan bilgiye sahip olması ve bu kararları uygulayabilmesi olarak tanımlar.
+Finansal okuryazarlık, para hakkında çok sayıda terim bilmekten daha geniş bir beceridir. Geliri planlama, seçeneklerin maliyetini karşılaştırma, riskleri fark etme ve alınan kararların gelecekteki etkisini değerlendirme kapasitesini kapsar.
 
 Bu beceri yalnızca yüksek geliri veya yatırım hesabı olan kişiler için gerekli değildir. Kira sözleşmesi imzalamak, kredi kartı ekstresindeki son ödeme tarihini okumak, market bütçesi belirlemek ya da beklenmedik bir sağlık giderine hazırlanmak da finansal kararların parçasıdır. Gelir düzeyi imkânların sınırını etkiler; finansal okuryazarlık ise o sınırlar içinde daha görünür ve tutarlı seçimler yapmaya yardım eder.
 
@@ -36,7 +36,7 @@ Basit bir oran sistemi başlangıç için yeterli olabilir. [50/30/20 bütçe ku
 
 ### Enflasyon ve satın alma gücü
 
-Enflasyon, genel fiyat düzeyindeki sürekli artışı ifade eder. Aynı ₺1.000 ile zaman içinde daha az ürün alınabiliyorsa paranın satın alma gücü azalmıştır. TÜİK'in Temmuz 2026 verisinde yıllık tüketici fiyat artışı yüzde 31,75 olarak açıklanmıştır. Bu oran her ürünün fiyatının aynı ölçüde arttığı anlamına gelmez; hanelerin kişisel enflasyonu harcama sepetlerine göre farklılaşır.
+Enflasyon, genel fiyat düzeyindeki sürekli artışı ifade eder. Aynı ₺1.000 ile zaman içinde daha az ürün alınabiliyorsa paranın satın alma gücü azalmıştır. Diyelim ki yıllık tüketici fiyat artışı yüzde 31,75 olsun. Bu oran her ürünün fiyatının aynı ölçüde arttığı anlamına gelmez; hanelerin kişisel enflasyonu harcama sepetlerine göre farklılaşır.
 
 Bu bilgi bütçede iki nedenle önemlidir. Birincisi, geçen yıl belirlenen market veya ulaşım tutarı bugün gerçekçi olmayabilir. İkincisi, uzun vadeli bir hedefin tutarı yalnızca bugünkü fiyat üzerinden bırakılırsa hedefe ulaşıldığında yetersiz kalabilir. Üç ayda bir fiyat ve bütçe güncellemesi yapmak, sürekli plan değiştirmekten daha düzenli bir çözümdür.
 
@@ -56,7 +56,7 @@ Risk yalnızca yatırım fiyatlarının değişmesi değildir. İş kaybı, sağ
 
 Finansal okuryazar kişi her metni ezberlemez; hangi bilgiyi nerede arayacağını bilir. Son ödeme tarihi, cayma veya iptal şartı, kişisel veri kullanımı, otomatik yenileme ve toplam ücret gibi bölümleri okumak temel tüketici davranışıdır.
 
-Sosyal medyada hızlı kazanç, kesin getiri veya risksiz fırsat iddiası taşıyan içerikler özellikle dikkat gerektirir. Bilginin kaynağı, tarihi, çıkar ilişkisi ve dayandığı veri kontrol edilmelidir. Resmî kurumların sayfaları, mevzuat metinleri ve yöntemi açıklanan istatistikler isimsiz ekran görüntülerinden daha güvenilir bir başlangıçtır.
+Sosyal medyada hızlı kazanç, kesin getiri veya risksiz fırsat iddiası taşıyan içerikler özellikle dikkat gerektirir. Bilginin kaynağı, tarihi, çıkar ilişkisi ve dayandığı veri kontrol edilmelidir. Yöntemi açıklanan, tarihi belli ve bağlamı anlaşılır bilgiler isimsiz ekran görüntülerinden daha güvenilir bir başlangıçtır.
 
 ## Neden günlük yaşam için önemlidir?
 
@@ -84,7 +84,7 @@ Bu yaklaşım, finansal bilgiyi soyut tanımlardan çıkarır. Her hafta tek kav
 
 Bir iddia gördüğünüzde yayın tarihini ve birincil kaynağı bulun. Ekonomik veriler zamanla değiştiği için eski içerikler bugün doğru olmayabilir. Ayrıca nominal tutar ile oranı ayırın: maaşın ₺5.000 artması, fiyatlar daha hızlı arttıysa satın alma gücünde aynı artışı göstermeyebilir.
 
-Resmî kaynaklar da bağlamla okunmalıdır. TÜFE genel bir sepeti ölçer; sizin kiranız veya okul masrafınız bu ortalamadan farklı ilerleyebilir. Veri kararın tamamı değil, karar için kullanılan araçlardan biridir.
+Veriler bağlamla okunmalıdır. Genel bir tüketim sepeti sizin kiranız veya okul masrafınızdan farklı ilerleyebilir. Veri kararın tamamı değil, karar için kullanılan araçlardan biridir.
 
 ### 4. Küçük sistemler kurun
 
@@ -96,13 +96,13 @@ Bir hedef seçerken tutar, tarih ve aylık katkıyı yazın. “Para biriktirmek
 
 Eğitim içeriği kavramları, yöntemleri ve olası sonuçları açıklar. Kişiye özel finansal tavsiye ise kişinin tüm koşullarını değerlendirerek belirli bir ürün veya işlem önerebilir. Bu sitedeki yazılar birinci gruptadır; kredi, yatırım, sigorta veya başka finansal ürün satmaz ve kişiye özel danışmanlık sunmaz.
 
-Genel bir örnek herkes için aynı sonucu vermez. ₺5.000 aylık tasarruf bir hane için rahat, diğeri için imkânsız olabilir. Sağlık, yaş, borç, aile yükümlülükleri ve gelir istikrarı kararları değiştirir. Büyük veya geri döndürülmesi zor kararlarda yetkili uzmanlardan ve resmî kurumlardan destek almak gerekebilir.
+Genel bir örnek herkes için aynı sonucu vermez. ₺5.000 aylık tasarruf bir hane için rahat, diğeri için imkânsız olabilir. Sağlık, yaş, borç, aile yükümlülükleri ve gelir istikrarı kararları değiştirir. Büyük veya geri döndürülmesi zor kararlarda yetkili uzmanlardan destek almak gerekebilir.
 
 ## Bir aylık öğrenme ve uygulama planı
 
 İlk hafta yalnızca nakit akışına odaklanın. Hesaba giren net tutarı, sabit ödemeleri ve son üç ayın değişken gider ortalamasını çıkarın. Bir uygulama seçmekten önce verinin nerede bulunduğunu öğrenin. Banka hareketleri, ekstreler ve nakit notları çoğu başlangıç sorusuna cevap verir.
 
-İkinci hafta bir sözleşme veya ekstre okuyun. Son ödeme tarihi, toplam tutar, ücret, yenileme ve iptal koşullarını işaretleyin. Anlamadığınız terimleri hizmeti sunan kurumun resmî açıklamasından ve düzenleyici kurumların kaynaklarından araştırın. Bir sosyal medya paylaşımını tek başına kaynak kabul etmeyin.
+İkinci hafta bir sözleşme veya ekstre okuyun. Son ödeme tarihi, toplam tutar, ücret, yenileme ve iptal koşullarını işaretleyin. Anlamadığınız terimleri hizmeti sunan kurumun sözleşme, yardım veya sık sorulan sorular metinlerinden araştırın. Bir sosyal medya paylaşımını tek başına kaynak kabul etmeyin.
 
 Üçüncü hafta tek bir davranış sistemi kurun. Bu, maaş gününde ₺750 otomatik aktarım, pazar akşamı 10 dakikalık bütçe kontrolü veya tüm aboneliklerin tek listede toplanması olabilir. Küçük sistemin bir ay boyunca çalışması, aynı anda beş yeni kural koymaktan daha öğreticidir.
 
@@ -126,4 +126,3 @@ Kavram bilgisi kadar davranış da önemlidir. Bütçe yapabilmek, sözleşmedek
 
 Finansal okuryazarlık bir kez tamamlanan ders değil, koşullar değiştikçe gelişen bir yaşam becerisidir. Başlangıç noktası karmaşık ürünler değil, kendi hesabınızdaki para hareketlerini anlayabilmektir. Düzenli kayıt, güvenilir kaynak ve küçük uygulama adımları zaman içinde daha sakin ve bilinçli kararlar oluşturur.
 
-**Kaynaklar:** [TCMB Terimler Sözlüğü](https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB%2BTR/Main%2BMenu/Banka%2BHakkinda/Egitim-Akademik/Terimler%2BSozlugu/) ve [TÜİK Temmuz 2026 Tüketici Fiyat Endeksi](https://veriportali.tuik.gov.tr/tr/press/58297).
