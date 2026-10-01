@@ -12,7 +12,7 @@ faq:
   - q: "Finansal okuryazarlık nasıl ölçülür?"
     a: "Kavram bilgisi kadar davranış da önemlidir. Bütçe yapabilmek, sözleşmedeki toplam maliyeti okuyabilmek ve hedef için düzenli para ayırmak birlikte değerlendirilmelidir."
   - q: "Finansal bilgi edinmeye nereden başlanmalı?"
-    a: "Önce kendi gelir-gider akışınızı çıkarın. Ardından enflasyon, faiz, borç maliyeti, acil durum fonu ve temel tüketici haklarını güvenilir kaynaklardan öğrenin."
+    a: "Önce kendi gelir-gider akışınızı çıkarın. Ardından enflasyon, faiz, borç maliyeti, acil durum fonu ve temel tüketici haklarını güvenilir bilgilerle öğrenin."
 relatedPosts:
   - "50-30-20-kurali"
   - "finansal-hedef-belirleme"
@@ -80,7 +80,7 @@ Ay sonunda tahmin ile gerçekleşeni karşılaştırın. Market için ₺6.000 p
 
 Bu yaklaşım, finansal bilgiyi soyut tanımlardan çıkarır. Her hafta tek kavrama 20 dakika ayırmak, bir gecede onlarca video izlemekten daha kalıcı olabilir.
 
-### 3. Kaynakları çapraz kontrol edin
+### 3. Bilgileri çapraz kontrol edin
 
 Bir iddia gördüğünüzde yayın tarihini ve birincil kaynağı bulun. Ekonomik veriler zamanla değiştiği için eski içerikler bugün doğru olmayabilir. Ayrıca nominal tutar ile oranı ayırın: maaşın ₺5.000 artması, fiyatlar daha hızlı arttıysa satın alma gücünde aynı artışı göstermeyebilir.
 
@@ -122,7 +122,7 @@ Kavram bilgisi kadar davranış da önemlidir. Bütçe yapabilmek, sözleşmedek
 
 ### Finansal bilgi edinmeye nereden başlanmalı?
 
-Önce kendi gelir-gider akışınızı çıkarın. Ardından enflasyon, faiz, borç maliyeti, acil durum fonu ve temel tüketici haklarını güvenilir kaynaklardan öğrenin.
+Önce kendi gelir-gider akışınızı çıkarın. Ardından enflasyon, faiz, borç maliyeti, acil durum fonu ve temel tüketici haklarını güvenilir bilgilerle öğrenin.
 
 Finansal okuryazarlık bir kez tamamlanan ders değil, koşullar değiştikçe gelişen bir yaşam becerisidir. Başlangıç noktası karmaşık ürünler değil, kendi hesabınızdaki para hareketlerini anlayabilmektir. Düzenli kayıt, güvenilir kaynak ve küçük uygulama adımları zaman içinde daha sakin ve bilinçli kararlar oluşturur.
 
