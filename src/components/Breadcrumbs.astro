@@ -11,12 +11,12 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<nav aria-label="İçerik yolu" class="mb-7 text-sm text-muted">
-  <ol class="m-0 flex list-none flex-wrap items-center gap-2 p-0">
+<nav aria-label="İçerik yolu" class="mb-3 text-xs text-muted md:mb-7 md:text-sm">
+  <ol class="m-0 flex list-none flex-nowrap items-center gap-2 p-0 md:flex-wrap">
     {items.map((item, index) => (
-      <li class="flex items-center gap-2">
+      <li class:list={['items-center gap-2', index === 1 ? 'flex' : 'hidden md:flex']}>
         {item.href ? <a class="hover:text-accent hover:underline" href={item.href}>{item.label}</a> : <span aria-current="page">{item.label}</span>}
-        {index < items.length - 1 && <span aria-hidden="true">/</span>}
+        {index < items.length - 1 && <span class={index === 1 ? 'hidden md:inline' : undefined} aria-hidden="true">/</span>}
       </li>
     ))}
   </ol>
