@@ -13,12 +13,19 @@ const taboolaEvent = GATED_ROUTE_SET.has(pathname)
       ? 'lead'
       : undefined
   : 'page_view';
+const renderGa4 = Boolean(ga4Id && !GATED_ROUTE_SET.has(pathname));
+const renderMeta = Boolean(metaId);
+const renderAnalytics = renderGa4 || renderMeta;
+const analyticsGa4Id = renderGa4 ? ga4Id : undefined;
+const analyticsMetaId = renderMeta ? metaId : undefined;
 const renderTaboola = Boolean(taboolaId && taboolaEvent);
 ---
 
-<div id="analytics-config" hidden data-ga4={ga4Id || undefined} data-meta={metaId || undefined}></div>
+{renderAnalytics && (
+  <Fragment>
+    <div id="analytics-config" hidden data-ga4={analyticsGa4Id} data-meta={analyticsMetaId}></div>
 
-<script is:inline>
+    <script is:inline>
   (() => {
     let loaded = false;
     function loadAnalytics() {
@@ -59,7 +66,9 @@ const renderTaboola = Boolean(taboolaId && taboolaEvent);
     loadAnalytics();
     window.addEventListener('cookie-consent', loadAnalytics);
   })();
-</script>
+    </script>
+  </Fragment>
+)}
 
 {renderTaboola && (
   <Fragment>
