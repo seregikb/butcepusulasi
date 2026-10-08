@@ -1,3 +1,6 @@
 name = "butcepusulasi"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-08-25"
+
+# Optionally bind a KV namespace as LEAD_FAILURES in the Cloudflare Pages
+# dashboard. Do not commit a placeholder namespace ID.

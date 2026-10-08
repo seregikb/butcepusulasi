@@ -13,9 +13,6 @@ const sharedFailures = [];
 const routeMatches = [];
 
 function unresolvedValue(key) {
-  if (key === 'FORM_ENDPOINT' && process.env.PUBLIC_FORM_ENDPOINT) {
-    return process.env.PUBLIC_FORM_ENDPOINT.match(tokenPattern)?.[0];
-  }
   return placeholderValues[key]?.match(tokenPattern)?.[0];
 }
 

@@ -124,5 +124,4 @@ Kavram bilgisi kadar davranış da önemlidir. Bütçe yapabilmek, sözleşmedek
 
 Önce kendi gelir-gider akışınızı çıkarın. Ardından enflasyon, faiz, borç maliyeti, acil durum fonu ve temel tüketici haklarını güvenilir bilgilerle öğrenin.
 
-Finansal okuryazarlık bir kez tamamlanan ders değil, koşullar değiştikçe gelişen bir yaşam becerisidir. Başlangıç noktası karmaşık ürünler değil, kendi hesabınızdaki para hareketlerini anlayabilmektir. Düzenli kayıt, güvenilir kaynak ve küçük uygulama adımları zaman içinde daha sakin ve bilinçli kararlar oluşturur.
-
+Finansal okuryazarlık bir kez tamamlanan ders değil, koşullar değiştikçe gelişen bir yaşam becerisidir. Başlangıç noktası karmaşık ürünler değil, kendi hesabınızdaki para hareketlerini anlayabilmektir. Düzenli kayıt, güvenilir kaynak ve küçük uygulama adımları zaman içinde daha sakin, tutarlı ve bilinçli finansal kararlar oluşturur.

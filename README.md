@@ -42,9 +42,14 @@ Copy `.env.example` to `.env` for local values. Do not commit secrets.
 | `PUBLIC_GA4_ID` | GA4 measurement ID; no GA script is created when empty |
 | `PUBLIC_TABOOLA_ID` | Taboola pixel ID; no pixel is created when empty |
 | `PUBLIC_META_PIXEL_ID` | Meta pixel ID; no pixel is created when empty |
-| `PUBLIC_FORM_ENDPOINT` | Contact form JSON endpoint |
 | `PUBLIC_LEAD_FUNNEL_ENABLED` | Enables funnel behavior and indexing only when exactly `true` |
-| `CONVERSION_API_ENDPOINT` | Planned server-side lead recipient endpoint |
+| `PUBLIC_CONTACT_FORM_ENABLED` | Renders the contact form only when exactly `true` |
+| `LEAD_ENDPOINT` | Server-only partner lead receiver |
+| `CONTACT_ENDPOINT` | Server-only contact-message receiver |
+| `TABOOLA_S2S_ENDPOINT` | Server-only base URL for Taboola conversion postbacks |
+| `TABOOLA_EVENT_NAME` | Taboola Realize Event Name used by S2S postbacks |
+
+Optionally bind a Cloudflare KV namespace to the Pages Function as `LEAD_FAILURES`. Failed partner deliveries are stored under `failed-leads/<timestamp>/<uuid>` and can be read in Cloudflare Dashboard under **Storage & Databases > KV > your namespace**. Without the binding, failed submissions are emitted as structured JSON in Pages Function logs; healthy lead delivery is never blocked.
 
 Analytics and advertising scripts are injected only after explicit cookie acceptance.
 

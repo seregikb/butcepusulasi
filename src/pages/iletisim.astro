@@ -4,18 +4,18 @@ import PageIntro from '@/components/PageIntro.astro';
 import ContactDetails from '@/components/ContactDetails.astro';
 import HoneypotField from '@/components/HoneypotField.astro';
 
-const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
+const contactFormEnabled = import.meta.env.PUBLIC_CONTACT_FORM_ENABLED === 'true';
 ---
 
 <BaseLayout title="İletişim" description="Bütçe Pusulası editör ekibine içerik soruları, düzeltme bildirimleri ve genel görüşleriniz için ulaşın.">
   <PageIntro title="İletişim" description="İçeriklerle ilgili görüş, düzeltme bildirimi veya genel sorularınız için bize yazabilirsiniz." />
-  <section class="container grid gap-12 py-12 md:grid-cols-[1fr_1.4fr] md:py-16">
+  <section class:list={['container grid gap-12 py-12 md:py-16', contactFormEnabled && 'md:grid-cols-[1fr_1.4fr]']}>
     <div>
       <h2 class="text-2xl font-bold">İletişim bilgileri</h2>
       <ContactDetails class="mt-4 text-muted" />
       <p class="mt-5 leading-7 text-muted">Kişiye özel finansal danışmanlık veya ürün başvurusu hizmeti vermediğimizi hatırlatırız.</p>
     </div>
-    <form id="contact-form" data-endpoint={endpoint} class="space-y-5" novalidate>
+    {contactFormEnabled && <form id="contact-form" class="space-y-5" action="/api/contact" method="post" novalidate>
       <div>
         <label class="mb-2 block font-bold" for="name">Adınız</label>
         <input class="min-h-12 w-full border border-rule bg-white px-4" id="name" name="name" type="text" autocomplete="name" required maxlength="100" />
@@ -31,11 +31,11 @@ const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
       <HoneypotField />
       <button class="min-h-12 border border-accent bg-accent px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60" type="submit">Mesajı gönder</button>
       <p id="form-status" class="min-h-6 text-sm font-semibold" role="status" aria-live="polite"></p>
-    </form>
+    </form>}
   </section>
 </BaseLayout>
 
-<script is:inline>
+{contactFormEnabled && <script is:inline>
   const form = document.querySelector('#contact-form');
   const status = document.querySelector('#form-status');
   form?.addEventListener('submit', async (event) => {
@@ -48,19 +48,13 @@ const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
       status.textContent = 'Mesajınız gönderildi. Teşekkür ederiz.';
       return;
     }
-    const endpoint = form.dataset.endpoint || '';
-    if (!endpoint) {
-      status.textContent = 'Form geçici olarak kullanılamıyor. Lütfen e-posta adresimizi kullanın.';
-      return;
-    }
     const button = form.querySelector('button[type="submit"]');
     if (button instanceof HTMLButtonElement) button.disabled = true;
     status.textContent = 'Mesaj gönderiliyor…';
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(data)),
+        body: data,
       });
       if (!response.ok) throw new Error('request_failed');
       form.reset();
@@ -71,4 +65,4 @@ const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
       if (button instanceof HTMLButtonElement) button.disabled = false;
     }
   });
-</script>
+</script>}
