@@ -5,12 +5,6 @@ Do not enable the lead funnel until every token is replaced with reviewed legal 
 | Token | Meaning | Appears in / affects | Owner |
 |---|---|---|---|
 | `{{RECIPIENT_LEGAL_NAME}}` | Full legal name of the lead recipient | Funnel consent, thank-you page, disclosure | Legal / recipient |
-| `{{RECIPIENT_ADDRESS}}` | Registered or valid notice address | Privacy and disclosure text | Legal / recipient |
-| `{{RECIPIENT_KVKK_CONTACT_EMAIL}}` | Recipient address for KVKK requests | Privacy and disclosure text | Legal / recipient |
-| `{{DATA_CONTROLLER_LEGAL_NAME}}` | Legal identity of the data controller | Privacy, consent, disclosure | Site operator / legal |
-| `{{DATA_CONTROLLER_VERBIS_NO}}` | Data controller VERBİS number, if applicable | Disclosure text | Site operator / legal |
-| `{{LEAD_PURPOSE_TR}}` | Reviewed Turkish processing-purpose wording | Consent and disclosure | Legal / marketing operations |
-| `{{RETENTION_PERIOD_TR}}` | Reviewed Turkish retention period | Disclosure text | Legal / data controller |
 | `{{LEAD_ENDPOINT}}` | Server-to-server lead destination | Cloudflare Pages Function runtime guard | Engineering / recipient |
 | `{{CONTACT_ENDPOINT}}` | Server-to-server contact-message destination | Cloudflare Pages Function runtime guard | Engineering / recipient |
 

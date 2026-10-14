@@ -1,9 +1,10 @@
+import { CONTACT } from '@/data/contact';
+
 export const PLACEHOLDERS = {
   RECIPIENT_LEGAL_NAME: 'Adnan Kahveci Neighborhood',
-  RECIPIENT_ADDRESS: '{{RECIPIENT_ADDRESS}}',
-  RECIPIENT_KVKK_CONTACT_EMAIL: '{{RECIPIENT_KVKK_CONTACT_EMAIL}}',
-  DATA_CONTROLLER_LEGAL_NAME: '{{DATA_CONTROLLER_LEGAL_NAME}}',
-  DATA_CONTROLLER_VERBIS_NO: '{{DATA_CONTROLLER_VERBIS_NO}}',
-  LEAD_PURPOSE_TR: '{{LEAD_PURPOSE_TR}}',
-  RETENTION_PERIOD_TR: '{{RETENTION_PERIOD_TR}}',
+  RECIPIENT_ADDRESS: CONTACT.addressLines.join(', '),
+  RECIPIENT_KVKK_CONTACT_EMAIL: CONTACT.email,
+  DATA_CONTROLLER_LEGAL_NAME: CONTACT.companyTitle,
+  LEAD_PURPOSE_TR: 'kişiselleştirilmiş bütçe özeti hazırlanması ve talebiniz doğrultusunda sizinle iletişim kurulması',
+  RETENTION_PERIOD_TR: 'talebinizin sonuçlandırılmasından itibaren 2 yıl',
 } as const;
