@@ -35,9 +35,15 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
           ))}
         </div>
       </fieldset>
-      <div>
-        <label class="mb-2 block font-bold" for="ad">Adınız</label>
-        <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class="mb-2 block font-bold" for="ad">Adınız</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
+        </div>
+        <div>
+          <label class="mb-2 block font-bold" for="soyad">Soyadınız</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="soyad" name="soyad" type="text" autocomplete="family-name" required maxlength="80" />
+        </div>
       </div>
       <div>
         <label class="mb-2 block font-bold" for="eposta">E-posta adresiniz</label>

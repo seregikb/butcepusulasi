@@ -32,16 +32,6 @@ function serializeForm(form: FormData): Record<string, string | string[]> {
   return fields;
 }
 
-function splitName(value: string): { firstName: string; lastName: string } {
-  const fullName = value.trim();
-  const lastSpace = fullName.lastIndexOf(' ');
-  if (lastSpace === -1) return { firstName: fullName, lastName: '' };
-  return {
-    firstName: fullName.slice(0, lastSpace).trim(),
-    lastName: fullName.slice(lastSpace + 1).trim(),
-  };
-}
-
 function languageFromHeader(value: string | null): string {
   const firstTag = value?.split(',')[0]?.split(';')[0]?.trim() || '';
   return firstTag.match(/^[A-Za-z]{2}/)?.[0].toUpperCase() || '';
@@ -77,7 +67,7 @@ function parsePartnerResponse(body: string): { result?: boolean; code: string; m
     return {
       result: typeof result === 'boolean' ? result : undefined,
       code: typeof code === 'string' ? code : '',
-      message: typeof message === 'string' ? message : '',
+      message: typeof message === 'string' ? message : JSON.stringify(message) || '',
     };
   } catch {
     return null;
@@ -132,7 +122,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const form = await request.formData();
   if (String(form.get('website') || '')) return json({ ok: true });
 
-  const required = ['ad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent'];
+  const required = ['ad', 'soyad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent'];
   if (required.some((field) => !form.get(field))) return json({ ok: false, message: 'Eksik alan.' }, 400);
   const email = String(form.get('eposta') || '').trim();
   const phone = String(form.get('telefon') || '').trim();
@@ -140,13 +130,12 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const endpoint = env.LEAD_ENDPOINT?.trim();
   if (!endpoint) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
 
-  const { firstName, lastName } = splitName(String(form.get('ad') || ''));
   const tblci = String(form.get('tblci') || '').trim();
   const partnerPayload = {
     email,
     phone,
-    firstName,
-    lastName,
+    firstName: String(form.get('ad') || '').trim(),
+    lastName: String(form.get('soyad') || '').trim(),
     country: (request.headers.get('CF-IPCountry') || '').trim().toUpperCase(),
     lang: languageFromHeader(request.headers.get('Accept-Language')),
     creo: String(form.get('creo') || '').trim(),

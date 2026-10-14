@@ -4,6 +4,7 @@ import { onRequestPost } from '../functions/api/conversion';
 function leadForm(overrides: Record<string, string> = {}): FormData {
   const values = {
     ad: 'Ayşe',
+    soyad: 'Yılmaz',
     gelir_araligi: '₺30.001–₺50.000',
     hane_buyuklugu: '2 kişi',
     hedef: 'Harcamaları düzenlemek',
@@ -84,7 +85,7 @@ describe('lead conversion endpoint', () => {
 
     const waitUntil = vi.fn();
     const response = await onRequestPost({
-      request: request(leadForm({ ad: 'Mehmet Yılmaz', tblci: 'click id&1', creo: 'creative-9' }), {
+      request: request(leadForm({ ad: 'Mehmet', soyad: 'Yılmaz', tblci: 'click id&1', creo: 'creative-9' }), {
         'CF-Connecting-IP': '203.0.113.7',
         'CF-IPCountry': 'tr',
         'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
@@ -143,12 +144,12 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('maps a single-word name with an empty last name', async () => {
+  it('maps first and last names directly from separate fields', async () => {
     const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
-      request: request(leadForm({ ad: 'Mehmet', tblci: 'click id&1', creo: 'creative-9' }), {
+      request: request(leadForm({ ad: 'Mehmet Ali', soyad: 'Yılmaz', tblci: 'click id&1', creo: 'creative-9' }), {
         'CF-Connecting-IP': '203.0.113.7',
         'CF-IPCountry': 'tr',
         'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
@@ -161,8 +162,8 @@ describe('lead conversion endpoint', () => {
     expect(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string)).toEqual({
       email: 'ayse@example.com',
       phone: '+905301112233',
-      firstName: 'Mehmet',
-      lastName: '',
+      firstName: 'Mehmet Ali',
+      lastName: 'Yılmaz',
       country: 'TR',
       lang: 'TR',
       creo: 'creative-9',
@@ -217,6 +218,20 @@ describe('lead conversion endpoint', () => {
 
     const response = await onRequestPost({
       request: request(leadForm({ processing_consent: '' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a submission without a surname', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ soyad: '' })),
       env: env(),
       waitUntil: vi.fn(),
     });
@@ -292,7 +307,7 @@ describe('lead conversion endpoint', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       result: false,
       code: 'ERROR',
-      message: 'INVALID_LEAD',
+      message: { lastname: ['Lastname cannot be blank.'] },
     }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -314,7 +329,7 @@ describe('lead conversion endpoint', () => {
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
     expect(stored.downstreamStatus).toBe(200);
     expect(stored.downstreamCode).toBe('ERROR');
-    expect(stored.downstreamMessage).toBe('INVALID_LEAD');
+    expect(stored.downstreamMessage).toBe('{"lastname":["Lastname cannot be blank."]}');
   });
 
   it('rejects a non-JSON partner response without firing Taboola', async () => {

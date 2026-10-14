@@ -110,6 +110,8 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('G-NKNZXPZ73N');
     expect(enabled.routeHtml['butce-plani']).toContain('name="eposta" type="email" autocomplete="email" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" autocomplete="tel" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="ad" type="text" autocomplete="given-name" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="soyad" type="text" autocomplete="family-name" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="creo" value=""');
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="iletisim_turu"');
     expect(enabled.routeHtml['butce-plani'].match(/<input\b[^>]*type="checkbox"[^>]*>/g)).toHaveLength(1);
