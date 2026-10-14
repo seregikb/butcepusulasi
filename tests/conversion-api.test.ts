@@ -222,10 +222,11 @@ describe('lead conversion endpoint', () => {
   });
 
   it('stores every field in KV before returning a lead-delivery error', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 500 }));
+    const partnerBody = `partner rejected: ${'x'.repeat(2100)}`;
+    const fetchMock = vi.fn().mockResolvedValue(new Response(partnerBody, { status: 500 }));
     const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
     vi.stubGlobal('fetch', fetchMock);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     const response = await onRequestPost({
       request: request(leadForm({ tblci: 'recover-me' })),
@@ -239,12 +240,17 @@ describe('lead conversion endpoint', () => {
     expect(key).toMatch(/^failed-leads\/\d{4}-\d{2}-\d{2}T/);
     const stored = JSON.parse(serialized);
     expect(stored.downstreamStatus).toBe(500);
+    expect(stored.downstreamBody).toBe(partnerBody.slice(0, 2000));
     expect(stored.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(stored.fields).toEqual(Object.fromEntries(leadForm({ tblci: 'recover-me' })));
+    expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string).downstreamBody).toBe(partnerBody.slice(0, 2000));
   });
 
   it('stores the submission when the lead request has a network failure', async () => {
-    const fetchMock = vi.fn().mockRejectedValue(new Error('partner unavailable'));
+    const networkError = Object.assign(new Error('partner unavailable'), {
+      response: new Response('upstream connection closed'),
+    });
+    const fetchMock = vi.fn().mockRejectedValue(networkError);
     const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -259,6 +265,7 @@ describe('lead conversion endpoint', () => {
     expect(failureStore.put).toHaveBeenCalledOnce();
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
     expect(stored.downstreamStatus).toBe('network_error');
+    expect(stored.downstreamBody).toBe('upstream connection closed');
   });
 
   it('does not fail the lead request when Taboola fails', async () => {
@@ -312,6 +319,7 @@ describe('lead conversion endpoint', () => {
     const record = JSON.parse(errorSpy.mock.calls[0]?.[0] as string);
     expect(record.event).toBe('lead_delivery_failed');
     expect(record.downstreamStatus).toBe(500);
+    expect(record.downstreamBody).toBe('');
     expect(record.fields.tblci).toBe('log-me');
   });
 });

@@ -47,13 +47,36 @@ function languageFromHeader(value: string | null): string {
   return firstTag.match(/^[A-Za-z]{2}/)?.[0].toUpperCase() || '';
 }
 
+function truncateDownstreamBody(body: string): string {
+  return body.slice(0, 2000);
+}
+
+async function readResponseBody(response: Response): Promise<string> {
+  try {
+    return truncateDownstreamBody(await response.text());
+  } catch {
+    return '';
+  }
+}
+
+async function readNetworkErrorBody(error: unknown): Promise<string> {
+  if (error instanceof Response) return readResponseBody(error);
+  if (!error || typeof error !== 'object') return '';
+
+  const { body, response } = error as { body?: unknown; response?: unknown };
+  if (typeof body === 'string') return truncateDownstreamBody(body);
+  if (response instanceof Response) return readResponseBody(response);
+  return '';
+}
+
 async function storeFailedLead(
   store: PagesContext['env']['LEAD_FAILURES'],
   form: FormData,
   downstreamStatus: number | 'network_error',
+  downstreamBody: string,
 ): Promise<void> {
   const timestamp = new Date().toISOString();
-  const record = { event: 'lead_delivery_failed', timestamp, downstreamStatus, fields: serializeForm(form) };
+  const record = { event: 'lead_delivery_failed', timestamp, downstreamStatus, downstreamBody, fields: serializeForm(form) };
   if (!store) {
     console.error(JSON.stringify(record));
     return;
@@ -62,7 +85,7 @@ async function storeFailedLead(
   const key = `failed-leads/${timestamp}/${crypto.randomUUID()}`;
   try {
     await store.put(key, JSON.stringify(record));
-    console.error(`Lead delivery failed; submission stored at ${key}.`);
+    console.error(JSON.stringify({ ...record, recoveryKey: key }));
   } catch (error) {
     console.error(JSON.stringify({ ...record, recoveryStoreError: String(error) }));
   }
@@ -119,12 +142,14 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
       body: JSON.stringify(partnerPayload),
     });
   } catch (error) {
-    await storeFailedLead(env.LEAD_FAILURES, form, 'network_error');
+    const downstreamBody = await readNetworkErrorBody(error);
+    await storeFailedLead(env.LEAD_FAILURES, form, 'network_error', downstreamBody);
     console.error('Lead delivery request failed.', error);
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
   if (!response.ok) {
-    await storeFailedLead(env.LEAD_FAILURES, form, response.status);
+    const downstreamBody = await readResponseBody(response);
+    await storeFailedLead(env.LEAD_FAILURES, form, response.status, downstreamBody);
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
