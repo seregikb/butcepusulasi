@@ -14,8 +14,6 @@ interface PagesContext {
   };
 }
 
-const endpointPlaceholder = '{{LEAD_ENDPOINT}}';
-
 function json(data: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -86,13 +84,13 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const form = await request.formData();
   if (String(form.get('website') || '')) return json({ ok: true });
 
-  const required = ['ad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent', 'transfer_consent'];
+  const required = ['ad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent'];
   if (required.some((field) => !form.get(field))) return json({ ok: false, message: 'Eksik alan.' }, 400);
   const email = String(form.get('eposta') || '').trim();
   const phone = String(form.get('telefon') || '').trim();
   if (!email || !phone) return json({ ok: false, message: 'İletişim bilgileri gerekli.' }, 400);
-  const endpoint = env.LEAD_ENDPOINT || endpointPlaceholder;
-  if (endpoint.includes('{{')) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
+  const endpoint = env.LEAD_ENDPOINT?.trim();
+  if (!endpoint) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
 
   const { firstName, lastName } = splitName(String(form.get('ad') || ''));
   const tblci = String(form.get('tblci') || '').trim();

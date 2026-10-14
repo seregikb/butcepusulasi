@@ -13,7 +13,6 @@ function leadForm(overrides: Record<string, string> = {}): FormData {
     creo: '',
     website: '',
     processing_consent: 'on',
-    transfer_consent: 'on',
     ...overrides,
   };
   const form = new FormData();
@@ -205,6 +204,20 @@ describe('lead conversion endpoint', () => {
 
     expect(missingEmail.status).toBe(400);
     expect(missingPhone.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a submission without processing consent', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ processing_consent: '' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(response.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

@@ -112,6 +112,8 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" autocomplete="tel" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="creo" value=""');
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="iletisim_turu"');
+    expect(enabled.routeHtml['butce-plani'].match(/<input\b[^>]*type="checkbox"[^>]*>/g)).toHaveLength(1);
+    expect(enabled.routeHtml['butce-plani']).not.toContain('name="transfer_consent"');
     expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
     expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
     expect(enabled.anchorPages['butce-plani']).toHaveLength(5);

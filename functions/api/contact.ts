@@ -5,8 +5,6 @@ interface PagesContext {
   };
 }
 
-const endpointPlaceholder = '{{CONTACT_ENDPOINT}}';
-
 function json(data: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -26,8 +24,8 @@ export async function onRequestPost({ request, env }: PagesContext): Promise<Res
     return json({ ok: false, message: 'Geçersiz alan.' }, 400);
   }
 
-  const endpoint = env.CONTACT_ENDPOINT || endpointPlaceholder;
-  if (endpoint.includes('{{')) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
+  const endpoint = env.CONTACT_ENDPOINT?.trim();
+  if (!endpoint) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
 
   try {
     const response = await fetch(endpoint, {
