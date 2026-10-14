@@ -35,6 +35,10 @@ function env(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function partnerSuccessResponse(): Response {
+  return new Response(JSON.stringify({ result: true, code: 'SUCCESS', message: 'CREATED' }), { status: 200 });
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -74,7 +78,7 @@ describe('lead conversion endpoint', () => {
 
   it('posts mapped JSON first and then sends an encoded Taboola conversion', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(partnerSuccessResponse())
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -123,7 +127,7 @@ describe('lead conversion endpoint', () => {
   });
 
   it('skips Taboola when tblci is empty', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
@@ -140,7 +144,7 @@ describe('lead conversion endpoint', () => {
   });
 
   it('maps a single-word name with an empty last name', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
@@ -173,7 +177,7 @@ describe('lead conversion endpoint', () => {
   });
 
   it('uses empty country and language when the headers are absent', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
     vi.stubGlobal('fetch', fetchMock);
 
     await onRequestPost({
@@ -222,7 +226,12 @@ describe('lead conversion endpoint', () => {
   });
 
   it('stores every field in KV before returning a lead-delivery error', async () => {
-    const partnerBody = `partner rejected: ${'x'.repeat(2100)}`;
+    const partnerBody = JSON.stringify({
+      result: false,
+      code: 'PARTNER_ERROR',
+      message: 'INVALID_PHONE',
+      details: 'x'.repeat(2100),
+    });
     const fetchMock = vi.fn().mockResolvedValue(new Response(partnerBody, { status: 500 }));
     const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
     vi.stubGlobal('fetch', fetchMock);
@@ -241,9 +250,93 @@ describe('lead conversion endpoint', () => {
     const stored = JSON.parse(serialized);
     expect(stored.downstreamStatus).toBe(500);
     expect(stored.downstreamBody).toBe(partnerBody.slice(0, 2000));
+    expect(stored.downstreamCode).toBe('PARTNER_ERROR');
+    expect(stored.downstreamMessage).toBe('INVALID_PHONE');
     expect(stored.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(stored.fields).toEqual(Object.fromEntries(leadForm({ tblci: 'recover-me' })));
     expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string).downstreamBody).toBe(partnerBody.slice(0, 2000));
+  });
+
+  it('accepts a duplicate without firing Taboola', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      result: false,
+      code: 'ERROR',
+      message: 'DUPLICATE',
+      redirect_url: null,
+    }), { status: 200 }));
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const waitUntil = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ tblci: 'duplicate-click' })),
+      env: env({
+        TABOOLA_S2S_ENDPOINT: 'https://taboola.example/postback',
+        TABOOLA_EVENT_NAME: 'lead',
+      }),
+      waitUntil,
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(waitUntil).not.toHaveBeenCalled();
+    expect(JSON.parse(infoSpy.mock.calls[0]?.[0] as string)).toMatchObject({
+      downstreamCode: 'ERROR',
+      downstreamMessage: 'DUPLICATE',
+    });
+  });
+
+  it('rejects a parsed partner error without firing Taboola', async () => {
+    const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      result: false,
+      code: 'ERROR',
+      message: 'INVALID_LEAD',
+    }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const waitUntil = vi.fn();
+
+    const response = await onRequestPost({
+      request: request(leadForm({ tblci: 'rejected-click' })),
+      env: env({
+        LEAD_FAILURES: failureStore,
+        TABOOLA_S2S_ENDPOINT: 'https://taboola.example/postback',
+        TABOOLA_EVENT_NAME: 'lead',
+      }),
+      waitUntil,
+    });
+
+    expect(response.status).toBe(502);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(waitUntil).not.toHaveBeenCalled();
+    const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
+    expect(stored.downstreamStatus).toBe(200);
+    expect(stored.downstreamCode).toBe('ERROR');
+    expect(stored.downstreamMessage).toBe('INVALID_LEAD');
+  });
+
+  it('rejects a non-JSON partner response without firing Taboola', async () => {
+    const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
+    const fetchMock = vi.fn().mockResolvedValue(new Response('<html>bad gateway</html>', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const waitUntil = vi.fn();
+
+    const response = await onRequestPost({
+      request: request(leadForm({ tblci: 'malformed-click' })),
+      env: env({ LEAD_FAILURES: failureStore }),
+      waitUntil,
+    });
+
+    expect(response.status).toBe(502);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(waitUntil).not.toHaveBeenCalled();
+    const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
+    expect(stored.downstreamBody).toBe('<html>bad gateway</html>');
+    expect(stored.downstreamCode).toBe('');
+    expect(stored.downstreamMessage).toBe('');
   });
 
   it('stores the submission when the lead request has a network failure', async () => {
@@ -266,11 +359,13 @@ describe('lead conversion endpoint', () => {
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
     expect(stored.downstreamStatus).toBe('network_error');
     expect(stored.downstreamBody).toBe('upstream connection closed');
+    expect(stored.downstreamCode).toBe('');
+    expect(stored.downstreamMessage).toBe('');
   });
 
   it('does not fail the lead request when Taboola fails', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(partnerSuccessResponse())
       .mockRejectedValueOnce(new Error('taboola unavailable'));
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -291,7 +386,7 @@ describe('lead conversion endpoint', () => {
   });
 
   it('does not block a healthy lead delivery when KV is unbound', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
@@ -320,6 +415,8 @@ describe('lead conversion endpoint', () => {
     expect(record.event).toBe('lead_delivery_failed');
     expect(record.downstreamStatus).toBe(500);
     expect(record.downstreamBody).toBe('');
+    expect(record.downstreamCode).toBe('');
+    expect(record.downstreamMessage).toBe('');
     expect(record.fields.tblci).toBe('log-me');
   });
 });

@@ -53,7 +53,7 @@ function truncateDownstreamBody(body: string): string {
 
 async function readResponseBody(response: Response): Promise<string> {
   try {
-    return truncateDownstreamBody(await response.text());
+    return await response.text();
   } catch {
     return '';
   }
@@ -64,9 +64,24 @@ async function readNetworkErrorBody(error: unknown): Promise<string> {
   if (!error || typeof error !== 'object') return '';
 
   const { body, response } = error as { body?: unknown; response?: unknown };
-  if (typeof body === 'string') return truncateDownstreamBody(body);
+  if (typeof body === 'string') return body;
   if (response instanceof Response) return readResponseBody(response);
   return '';
+}
+
+function parsePartnerResponse(body: string): { result?: boolean; code: string; message: string } | null {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const { result, code, message } = parsed as Record<string, unknown>;
+    return {
+      result: typeof result === 'boolean' ? result : undefined,
+      code: typeof code === 'string' ? code : '',
+      message: typeof message === 'string' ? message : '',
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function storeFailedLead(
@@ -74,9 +89,19 @@ async function storeFailedLead(
   form: FormData,
   downstreamStatus: number | 'network_error',
   downstreamBody: string,
+  downstreamCode: string,
+  downstreamMessage: string,
 ): Promise<void> {
   const timestamp = new Date().toISOString();
-  const record = { event: 'lead_delivery_failed', timestamp, downstreamStatus, downstreamBody, fields: serializeForm(form) };
+  const record = {
+    event: 'lead_delivery_failed',
+    timestamp,
+    downstreamStatus,
+    downstreamBody: truncateDownstreamBody(downstreamBody),
+    downstreamCode,
+    downstreamMessage,
+    fields: serializeForm(form),
+  };
   if (!store) {
     console.error(JSON.stringify(record));
     return;
@@ -143,13 +168,42 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     });
   } catch (error) {
     const downstreamBody = await readNetworkErrorBody(error);
-    await storeFailedLead(env.LEAD_FAILURES, form, 'network_error', downstreamBody);
-    console.error('Lead delivery request failed.', error);
+    await storeFailedLead(env.LEAD_FAILURES, form, 'network_error', downstreamBody, '', '');
+    console.error(JSON.stringify({
+      event: 'lead_delivery_request_failed',
+      downstreamCode: '',
+      downstreamMessage: '',
+      error: String(error),
+    }));
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
-  if (!response.ok) {
-    const downstreamBody = await readResponseBody(response);
-    await storeFailedLead(env.LEAD_FAILURES, form, response.status, downstreamBody);
+
+  const downstreamBody = await readResponseBody(response);
+  const partnerResponse = parsePartnerResponse(downstreamBody);
+  const downstreamCode = partnerResponse?.code || '';
+  const downstreamMessage = partnerResponse?.message || '';
+  const accepted = response.ok && partnerResponse?.result === true;
+  const duplicate = response.ok && partnerResponse?.result === false && downstreamMessage === 'DUPLICATE';
+
+  if (duplicate) {
+    console.info(JSON.stringify({
+      event: 'lead_duplicate',
+      downstreamStatus: response.status,
+      downstreamCode,
+      downstreamMessage,
+    }));
+    return json({ ok: true });
+  }
+
+  if (!accepted) {
+    await storeFailedLead(
+      env.LEAD_FAILURES,
+      form,
+      response.status,
+      downstreamBody,
+      downstreamCode,
+      downstreamMessage,
+    );
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
