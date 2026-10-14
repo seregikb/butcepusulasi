@@ -1,20 +1,21 @@
 ---
-import { GATED_ROUTE_SET } from '@/data/gated-routes';
+import { isAnalyticsExcludedRoute } from '@/data/gated-routes';
 
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 const taboolaId = import.meta.env.PUBLIC_TABOOLA_ID;
 const metaId = import.meta.env.PUBLIC_META_PIXEL_ID;
 const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 const pathname = Astro.url.pathname;
-const taboolaEvent = GATED_ROUTE_SET.has(pathname)
-  ? funnelEnabled && pathname === '/butce-plani/'
+const analyticsExcluded = isAnalyticsExcludedRoute(pathname, funnelEnabled);
+const taboolaEvent = analyticsExcluded
+  ? undefined
+  : pathname === '/butce-plani/'
     ? 'step_1'
-    : funnelEnabled && pathname === '/tesekkurler/'
+    : pathname === '/tesekkurler/'
       ? 'lead'
-      : undefined
-  : 'page_view';
-const renderGa4 = Boolean(ga4Id && !GATED_ROUTE_SET.has(pathname));
-const renderMeta = Boolean(metaId);
+      : 'page_view';
+const renderGa4 = Boolean(ga4Id && !analyticsExcluded);
+const renderMeta = Boolean(metaId && !analyticsExcluded);
 const renderAnalytics = renderGa4 || renderMeta;
 const analyticsGa4Id = renderGa4 ? ga4Id : undefined;
 const analyticsMetaId = renderMeta ? metaId : undefined;

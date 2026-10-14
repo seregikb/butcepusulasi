@@ -45,6 +45,8 @@ Copy `.env.example` to `.env` for local values. Do not commit secrets.
 | `PUBLIC_LEAD_FUNNEL_ENABLED` | Enables funnel behavior and indexing only when exactly `true` |
 | `PUBLIC_CONTACT_FORM_ENABLED` | Renders the contact form only when exactly `true` |
 | `LEAD_ENDPOINT` | Server-only partner lead receiver |
+| `PARTNER_MARKER` | Server-only marker sent to the partner lead API |
+| `PARTNER_OFFER` | Server-only offer sent to the partner lead API |
 | `CONTACT_ENDPOINT` | Server-only contact-message receiver |
 | `TABOOLA_S2S_ENDPOINT` | Server-only base URL for Taboola conversion postbacks |
 | `TABOOLA_EVENT_NAME` | Taboola Realize Event Name used by S2S postbacks |

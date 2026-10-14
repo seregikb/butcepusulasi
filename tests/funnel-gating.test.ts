@@ -31,7 +31,8 @@ function build(enabled: boolean): BuildState {
     env: {
       ...process.env,
       PUBLIC_LEAD_FUNNEL_ENABLED: String(enabled),
-      PUBLIC_TABOOLA_ID: 'test-taboola-id',
+      PUBLIC_TABOOLA_ID: '2084914',
+      PUBLIC_GA4_ID: 'G-NKNZXPZ73N',
     },
     stdio: 'pipe',
   });
@@ -81,7 +82,11 @@ describe('lead funnel route gating', () => {
     }
     expect(disabled.articleHtml).toContain('data-event="page_view"');
     expect(disabled.articleHtml).toContain('cdn.taboola.com/libtrc/unip/');
-    for (const route of funnelRoutes) expect(disabled.routeHtml[route]).not.toContain('cdn.taboola.com/libtrc/unip/');
+    for (const route of funnelRoutes) {
+      expect(disabled.routeHtml[route]).not.toContain('2084914');
+      expect(disabled.routeHtml[route]).not.toContain('G-NKNZXPZ73N');
+    }
+    expect(disabled.routeHtml['butce-plani']).not.toContain("campaignParams.get('utm_content')");
   });
 
   it('indexes enabled routes and links from exactly five articles', () => {
@@ -97,7 +102,18 @@ describe('lead funnel route gating', () => {
     expect(enabled.articleHtml).toContain('data-event="page_view"');
     expect(enabled.routeHtml['butce-plani']).toContain('data-event="step_1"');
     expect(enabled.routeHtml.tesekkurler).toContain('data-event="lead"');
-    expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('cdn.taboola.com/libtrc/unip/');
+    for (const route of ['butce-plani', 'tesekkurler']) {
+      expect(enabled.routeHtml[route]).toContain('2084914');
+      expect(enabled.routeHtml[route]).toContain('G-NKNZXPZ73N');
+    }
+    expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('2084914');
+    expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('G-NKNZXPZ73N');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="eposta" type="email" autocomplete="email" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" autocomplete="tel" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="creo" value=""');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('name="iletisim_turu"');
+    expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
+    expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
     expect(enabled.anchorPages['butce-plani']).toHaveLength(5);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(new Set([
       'blog/acil-durum-fonu/index.html',

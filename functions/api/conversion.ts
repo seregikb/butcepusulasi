@@ -4,6 +4,8 @@ interface PagesContext {
   env: {
     PUBLIC_LEAD_FUNNEL_ENABLED?: string;
     LEAD_ENDPOINT?: string;
+    PARTNER_MARKER?: string;
+    PARTNER_OFFER?: string;
     TABOOLA_S2S_ENDPOINT?: string;
     TABOOLA_EVENT_NAME?: string;
     LEAD_FAILURES?: {
@@ -30,6 +32,21 @@ function serializeForm(form: FormData): Record<string, string | string[]> {
     else fields[name] = Array.isArray(existing) ? [...existing, value] : [existing, value];
   }
   return fields;
+}
+
+function splitName(value: string): { firstName: string; lastName: string } {
+  const fullName = value.trim();
+  const lastSpace = fullName.lastIndexOf(' ');
+  if (lastSpace === -1) return { firstName: fullName, lastName: '' };
+  return {
+    firstName: fullName.slice(0, lastSpace).trim(),
+    lastName: fullName.slice(lastSpace + 1).trim(),
+  };
+}
+
+function languageFromHeader(value: string | null): string {
+  const firstTag = value?.split(',')[0]?.split(';')[0]?.trim() || '';
+  return firstTag.match(/^[A-Za-z]{2}/)?.[0].toUpperCase() || '';
 }
 
 async function storeFailedLead(
@@ -71,13 +88,38 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
 
   const required = ['ad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent', 'transfer_consent'];
   if (required.some((field) => !form.get(field))) return json({ ok: false, message: 'Eksik alan.' }, 400);
-  if (!form.get('eposta') && !form.get('telefon')) return json({ ok: false, message: 'İletişim bilgisi gerekli.' }, 400);
+  const email = String(form.get('eposta') || '').trim();
+  const phone = String(form.get('telefon') || '').trim();
+  if (!email || !phone) return json({ ok: false, message: 'İletişim bilgileri gerekli.' }, 400);
   const endpoint = env.LEAD_ENDPOINT || endpointPlaceholder;
   if (endpoint.includes('{{')) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
 
+  const { firstName, lastName } = splitName(String(form.get('ad') || ''));
+  const tblci = String(form.get('tblci') || '').trim();
+  const partnerPayload = {
+    email,
+    phone,
+    firstName,
+    lastName,
+    country: (request.headers.get('CF-IPCountry') || '').trim().toUpperCase(),
+    lang: languageFromHeader(request.headers.get('Accept-Language')),
+    creo: String(form.get('creo') || '').trim(),
+    marker: env.PARTNER_MARKER || '',
+    offer: env.PARTNER_OFFER || '',
+    click_id: tblci,
+    ip: request.headers.get('CF-Connecting-IP') || '',
+    description: '',
+    domain: new URL(request.url).hostname,
+    sourcetype: 'taboola',
+  };
+
   let response: Response;
   try {
-    response = await fetch(endpoint, { method: 'POST', body: form });
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(partnerPayload),
+    });
   } catch (error) {
     await storeFailedLead(env.LEAD_FAILURES, form, 'network_error');
     console.error('Lead delivery request failed.', error);
@@ -88,7 +130,6 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
-  const tblci = String(form.get('tblci') || '').trim();
   const taboolaEndpoint = env.TABOOLA_S2S_ENDPOINT?.trim();
   const taboolaEventName = env.TABOOLA_EVENT_NAME?.trim();
   if (tblci && taboolaEndpoint && taboolaEventName) {

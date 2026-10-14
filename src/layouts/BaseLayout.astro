@@ -86,8 +86,11 @@ const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
     <Analytics />
     {funnelEnabled && (
       <script is:inline>
-        const clickId = new URLSearchParams(location.search).get('tblci');
+        const campaignParams = new URLSearchParams(location.search);
+        const clickId = campaignParams.get('tblci');
+        const creativeId = campaignParams.get('utm_content');
         if (clickId) sessionStorage.setItem('tblci', clickId);
+        if (creativeId) sessionStorage.setItem('creo', creativeId);
       </script>
     )}
   </body>

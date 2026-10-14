@@ -7,10 +7,10 @@ function leadForm(overrides: Record<string, string> = {}): FormData {
     gelir_araligi: '₺30.001–₺50.000',
     hane_buyuklugu: '2 kişi',
     hedef: 'Harcamaları düzenlemek',
-    iletisim_turu: 'eposta',
     eposta: 'ayse@example.com',
-    telefon: '',
+    telefon: '+905301112233',
     tblci: '',
+    creo: '',
     website: '',
     processing_consent: 'on',
     transfer_consent: 'on',
@@ -21,14 +21,16 @@ function leadForm(overrides: Record<string, string> = {}): FormData {
   return form;
 }
 
-function request(form: FormData): Request {
-  return new Request('https://butcepusulasi.com/api/conversion', { method: 'POST', body: form });
+function request(form: FormData, headers: HeadersInit = {}): Request {
+  return new Request('https://butcepusulasi.com/api/conversion', { method: 'POST', body: form, headers });
 }
 
 function env(overrides: Record<string, unknown> = {}) {
   return {
     PUBLIC_LEAD_FUNNEL_ENABLED: 'true',
     LEAD_ENDPOINT: 'https://partner.example/leads',
+    PARTNER_MARKER: 'marker-42',
+    PARTNER_OFFER: 'offer-7',
     LEAD_FAILURES: { put: vi.fn().mockResolvedValue(undefined) },
     ...overrides,
   };
@@ -71,7 +73,7 @@ describe('lead conversion endpoint', () => {
     expect(failureStore.put).not.toHaveBeenCalled();
   });
 
-  it('posts the lead first and then sends an encoded Taboola conversion', async () => {
+  it('posts mapped JSON first and then sends an encoded Taboola conversion', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
@@ -79,7 +81,11 @@ describe('lead conversion endpoint', () => {
 
     const waitUntil = vi.fn();
     const response = await onRequestPost({
-      request: request(leadForm({ tblci: 'click id&1' })),
+      request: request(leadForm({ ad: 'Mehmet Yılmaz', tblci: 'click id&1', creo: 'creative-9' }), {
+        'CF-Connecting-IP': '203.0.113.7',
+        'CF-IPCountry': 'tr',
+        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+      }),
       env: env({
         TABOOLA_S2S_ENDPOINT: 'https://taboola.example/postback',
         TABOOLA_EVENT_NAME: 'lead event/1',
@@ -90,8 +96,26 @@ describe('lead conversion endpoint', () => {
     expect(response.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://partner.example/leads');
-    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' });
-    expect(fetchMock.mock.calls[0]?.[1]?.body).toBeInstanceOf(FormData);
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'ayse@example.com',
+        phone: '+905301112233',
+        firstName: 'Mehmet',
+        lastName: 'Yılmaz',
+        country: 'TR',
+        lang: 'TR',
+        creo: 'creative-9',
+        marker: 'marker-42',
+        offer: 'offer-7',
+        click_id: 'click id&1',
+        ip: '203.0.113.7',
+        description: '',
+        domain: 'butcepusulasi.com',
+        sourcetype: 'taboola',
+      }),
+    });
     expect(fetchMock.mock.calls[1]?.[0]).toBe(
       'https://taboola.example/postback?click-id=click%20id%261&name=lead%20event%2F1',
     );
@@ -114,6 +138,74 @@ describe('lead conversion endpoint', () => {
 
     expect(response.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('maps a single-word name with an empty last name', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ ad: 'Mehmet', tblci: 'click id&1', creo: 'creative-9' }), {
+        'CF-Connecting-IP': '203.0.113.7',
+        'CF-IPCountry': 'tr',
+        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+      }),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(response.status).toBe(200);
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string)).toEqual({
+      email: 'ayse@example.com',
+      phone: '+905301112233',
+      firstName: 'Mehmet',
+      lastName: '',
+      country: 'TR',
+      lang: 'TR',
+      creo: 'creative-9',
+      marker: 'marker-42',
+      offer: 'offer-7',
+      click_id: 'click id&1',
+      ip: '203.0.113.7',
+      description: '',
+      domain: 'butcepusulasi.com',
+      sourcetype: 'taboola',
+    });
+  });
+
+  it('uses empty country and language when the headers are absent', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await onRequestPost({
+      request: request(leadForm()),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    const payload = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string);
+    expect(payload.country).toBe('');
+    expect(payload.lang).toBe('');
+  });
+
+  it('requires both email and phone before contacting the partner', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const missingEmail = await onRequestPost({
+      request: request(leadForm({ eposta: '   ' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+    const missingPhone = await onRequestPost({
+      request: request(leadForm({ telefon: '' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(missingEmail.status).toBe(400);
+    expect(missingPhone.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('stores every field in KV before returning a lead-delivery error', async () => {
