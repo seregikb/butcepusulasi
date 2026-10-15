@@ -5,24 +5,100 @@ function textContent(node) {
   return node.children?.map(textContent).join('') || '';
 }
 
-function linkParagraph({ before, anchor, after }) {
+function escapeHtml(value) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function asciiSlug(value) {
+  return value
+    .replaceAll('ı', 'i')
+    .replaceAll('İ', 'I')
+    .replaceAll('ş', 's')
+    .replaceAll('Ş', 'S')
+    .replaceAll('ğ', 'g')
+    .replaceAll('Ğ', 'G')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function sentenceParagraph({ before, anchor, after }, enabled) {
+  if (!enabled) {
+    return { type: 'paragraph', children: [{ type: 'text', value: `${before}${anchor}${after}` }] };
+  }
+
   return {
     type: 'paragraph',
     children: [
       { type: 'text', value: before },
-      { type: 'link', url: '/butce-plani/', children: [{ type: 'text', value: anchor }] },
+      {
+        type: 'link',
+        url: '/butce-plani/',
+        data: { hProperties: { className: ['article-funnel-link'] } },
+        children: [{ type: 'text', value: anchor }],
+      },
       { type: 'text', value: after },
     ],
   };
 }
 
+function tableOfContents(headings, enabled) {
+  const items = headings.map(({ id, title }) => `<li><a href="#${id}">${escapeHtml(title)}</a></li>`);
+  if (enabled) items.push('<li><a href="/butce-plani/">Kişisel bütçe planı</a></li>');
+
+  return {
+    type: 'html',
+    value: `<nav class="article-toc" aria-label="İçindekiler"><p class="article-toc__title">İçindekiler</p><ul>${items.join('')}</ul></nav>`,
+  };
+}
+
+function callout({ description, anchor }) {
+  return {
+    type: 'html',
+    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ARAÇ</p><p>${escapeHtml(description)}</p><p class="article-funnel-callout__link"><a class="article-funnel-link" href="/butce-plani/">${escapeHtml(anchor)}</a></p></aside>`,
+  };
+}
+
 export default function remarkArticleFunnelLinks({ enabled, links }) {
   return (tree, file) => {
-    if (!enabled || !file.path) return;
+    if (!file.path) return;
 
     const slug = basename(file.path, extname(file.path));
     const article = links[slug];
     if (!article) return;
+
+    const usedIds = new Map();
+    const headings = tree.children
+      .filter((node) => node.type === 'heading' && node.depth === 2)
+      .map((node) => {
+        const title = textContent(node);
+        const baseId = asciiSlug(title);
+        const count = usedIds.get(baseId) || 0;
+        usedIds.set(baseId, count + 1);
+        const id = count === 0 ? baseId : `${baseId}-${count + 1}`;
+        node.data = { ...node.data, hProperties: { ...node.data?.hProperties, id } };
+        return { node, title, id };
+      });
+
+    const tocHeadings = headings.filter(({ title }) => !['Sık Sorulan Sorular', 'İlgili yazılar'].includes(title));
+    const firstParagraphIndex = tree.children.findIndex((node) => node.type === 'paragraph');
+    if (firstParagraphIndex === -1) throw new Error(`Lead paragraph not found for ${slug}`);
+    tree.children.splice(firstParagraphIndex + 1, 0, tableOfContents(tocHeadings, enabled));
+
+    const firstHeadingIndex = tree.children.findIndex((node) => node === headings[0]?.node);
+    const secondHeadingIndex = tree.children.findIndex(
+      (node, index) => index > firstHeadingIndex && node.type === 'heading' && node.depth === 2,
+    );
+    if (firstHeadingIndex === -1 || secondHeadingIndex === -1) {
+      throw new Error(`First content section not found for ${slug}`);
+    }
+    if (enabled) tree.children.splice(secondHeadingIndex, 0, callout(article.callout));
 
     const headingIndex = tree.children.findIndex(
       (node) => node.type === 'heading' && textContent(node) === article.midAfterHeading,
@@ -34,6 +110,6 @@ export default function remarkArticleFunnelLinks({ enabled, links }) {
       (node, index) => index > headingIndex && node.type === 'heading' && node.depth <= headingDepth,
     );
     const insertAt = nextSectionIndex === -1 ? tree.children.length : nextSectionIndex;
-    tree.children.splice(insertAt, 0, linkParagraph(article.mid));
+    tree.children.splice(insertAt, 0, sentenceParagraph(article.mid, enabled));
   };
 }

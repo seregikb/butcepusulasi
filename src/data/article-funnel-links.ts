@@ -6,6 +6,10 @@ interface LinkSentence {
 
 interface ArticleFunnelLinks {
   midAfterHeading: string;
+  callout: {
+    description: string;
+    anchor: string;
+  };
   mid: LinkSentence;
   end: LinkSentence;
 }
@@ -13,6 +17,10 @@ interface ArticleFunnelLinks {
 export const ARTICLE_FUNNEL_LINKS = {
   '50-30-20-kurali': {
     midAfterHeading: 'Maaşınızı adım adım nasıl bölersiniz?',
+    callout: {
+      description: 'Gelir ve gider aralıklarınıza göre bu dağılımı kendi bütçeniz üzerinde görebilirsiniz.',
+      anchor: '50/30/20 dağılımına göre kişisel bütçe tablosu',
+    },
     mid: {
       before: 'Bu hesaplamayı kendi gelir ve giderlerinize uyarlarken ',
       anchor: 'kişisel bütçe dağılımı ve XLSX şablonu',
@@ -26,6 +34,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'acil-durum-fonu': {
     midAfterHeading: 'Adım 1: Aylık zorunlu gideri hesaplayın',
+    callout: {
+      description: 'Aylık giderlerinizle fon hedefinizi aynı bütçe görünümünde değerlendirebilirsiniz.',
+      anchor: 'Acil durum fonuna yer veren kişisel bütçe özeti',
+    },
     mid: {
       before: 'Zorunlu gider toplamınızı kaydederken ',
       anchor: 'kişisel bütçe planı ve gelir gider tablosu',
@@ -39,6 +51,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'basit-butce-sistemi': {
     midAfterHeading: 'Adım 1: Net geliri ve zorunlu giderleri yazın',
+    callout: {
+      description: 'Gelirinizin zorunlu gider, esnek harcama ve hedefler arasındaki yerini görebilirsiniz.',
+      anchor: 'Üç adımlı sisteme uygun bütçe dağılımı',
+    },
     mid: {
       before: 'Net gelir ve zorunlu gider hesabını ',
       anchor: 'kişisel bütçe dağılımı şablonuna',
@@ -52,6 +68,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'cocuklara-para-egitimi': {
     midAfterHeading: '10–12 yaş: Basit bütçe ve fiyat karşılaştırması',
+    callout: {
+      description: 'Çocuklarla paylaşacağınız örnekleri hazırlarken hane bütçenizin sade bir özetini kullanabilirsiniz.',
+      anchor: 'Aile bütçesi için gelir-gider özeti',
+    },
     mid: {
       before: 'Aile bütçesinden güvenli bir örnek hazırlamak için ',
       anchor: 'kişisel bütçe dağılımı ve tablo şablonu',
@@ -65,6 +85,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'finansal-hedef-belirleme': {
     midAfterHeading: 'M: Ölçülebilir bir tutar belirleyin',
+    callout: {
+      description: 'Hedefler için ayırabileceğiniz tutarı mevcut gelir ve gider dengeniz içinde görebilirsiniz.',
+      anchor: 'Finansal hedefleri içeren kişisel bütçe planı',
+    },
     mid: {
       before: 'Hedef tutarını aylık katkıya dönüştürürken ',
       anchor: 'kişisel bütçe planı ve XLSX şablonu',
@@ -77,7 +101,11 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'finansal-okuryazarlik-nedir': {
-    midAfterHeading: 'Gelir ve gider yönetimi',
+    midAfterHeading: 'Neden günlük yaşam için önemlidir?',
+    callout: {
+      description: 'Temel bütçe kavramlarını kendi aylık nakit akışınız üzerinde değerlendirebilirsiniz.',
+      anchor: 'Temel nakit akışını gösteren bütçe özeti',
+    },
     mid: {
       before: 'Kendi gelir-gider dengenizi görmek için ',
       anchor: 'kişisel bütçe özeti ve XLSX şablonu',
@@ -91,6 +119,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'gelir-gider-tablosu-sablonu': {
     midAfterHeading: 'Adım 1: Net gelirleri yazın',
+    callout: {
+      description: 'Tablodaki aylık rakamları kişisel bir bütçe dağılımına dönüştürebilirsiniz.',
+      anchor: 'Aylık gelir-gider verilerine göre bütçe planı',
+    },
     mid: {
       before: 'Net gelir toplamından başlayarak ',
       anchor: 'kişisel bütçe dağılımı ve XLSX planı',
@@ -104,6 +136,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'gizli-abonelikler': {
     midAfterHeading: 'Adım 1: Banka ve kart hareketlerini tarayın',
+    callout: {
+      description: 'Düzenli ödemelerin bütçenizde kapladığı alanı diğer giderlerle birlikte görebilirsiniz.',
+      anchor: 'Abonelikleri görünür kılan bütçe dağılımı',
+    },
     mid: {
       before: 'Bulduğunuz abonelikleri aylık plana eklemek için ',
       anchor: 'kişisel bütçe tablosu ve gelir-gider özeti',
@@ -117,6 +153,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'kredi-karti-ekstresi-okuma': {
     midAfterHeading: 'İşlem listesini satır satır kontrol edin',
+    callout: {
+      description: 'Ekstredeki kalemleri aylık gelir ve gider planınızla birlikte değerlendirebilirsiniz.',
+      anchor: 'Ekstre kalemlerini içeren kişisel bütçe tablosu',
+    },
     mid: {
       before: 'Kontrol ettiğiniz işlemleri kategorilere ayırırken ',
       anchor: 'kişisel bütçe planı ve XLSX tablosu',
@@ -130,9 +170,13 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'maas-gelmeden-biten-para': {
     midAfterHeading: 'Harcama 1: Otomatik yenilenen abonelikler',
+    callout: {
+      description: 'Fark edilmeden tekrarlanan giderlerin aylık bütçenizdeki toplam etkisini görebilirsiniz.',
+      anchor: 'Gizli harcamalara göre bütçe özeti',
+    },
     mid: {
-      before: 'Bu ilk görünmeyen gideri aylık planınıza eklerken ',
-      anchor: 'kişisel bütçe dağılımı ve XLSX şablonu',
+      before: 'Bu ilk görünmeyen gideri ',
+      anchor: 'aylık planınıza eklerken kişisel bütçe dağılımı ve XLSX şablonu',
       after: ' diğer kalemlerle birlikte etkisini gösterebilir.',
     },
     end: {
@@ -143,6 +187,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'market-alisverisi-tasarruf': {
     midAfterHeading: 'Yöntem 1: Evdeki stokla başlayın',
+    callout: {
+      description: 'Market için ayıracağınız sınırı hane geliriniz ve diğer giderlerinizle birlikte görebilirsiniz.',
+      anchor: 'Market sınırını içeren hane bütçesi planı',
+    },
     mid: {
       before: 'Stok kontrolünden çıkan gerçek ihtiyacı ',
       anchor: 'kişisel bütçe planı ve gelir-gider şablonuna',
@@ -156,6 +204,10 @@ export const ARTICLE_FUNNEL_LINKS = {
   },
   'zarf-yontemi-butceleme': {
     midAfterHeading: 'Adım 1: Gerçek harcamaları belirleyin',
+    callout: {
+      description: 'Zarf tutarlarını belirlerken kullanılabilir gelirinizi tek bir dağılımda değerlendirebilirsiniz.',
+      anchor: 'Zarf kategorilerine uygun bütçe tablosu',
+    },
     mid: {
       before: 'Gerçek harcama ortalamalarını ',
       anchor: 'kişisel bütçe dağılımı ve XLSX şablonuna',

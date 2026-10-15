@@ -69,8 +69,8 @@ const faqSchema = post.data.faq ? {
     </div>
     <div class="prose mx-auto mt-6 md:mt-10">
       <Content />
-      {funnelEnabled && funnelLinks && (
-        <p>{funnelLinks.end.before}<a href="/butce-plani/">{funnelLinks.end.anchor}</a>{funnelLinks.end.after}</p>
+      {funnelLinks && (
+        <p>{funnelLinks.end.before}{funnelEnabled ? <a class="article-funnel-link" href="/butce-plani/">{funnelLinks.end.anchor}</a> : funnelLinks.end.anchor}{funnelLinks.end.after}</p>
       )}
     </div>
   </article>

@@ -31,4 +31,10 @@ const imageBase = `/images/articles/${slug}`;
   .cover-art {
     aspect-ratio: 16 / 9;
   }
+
+  @media (max-width: 767px) {
+    .cover-art {
+      max-height: 38vh;
+    }
+  }
 </style>

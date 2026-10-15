@@ -98,6 +98,8 @@ describe('lead funnel route gating', () => {
     expect(disabled.articleHtml['basit-butce-sistemi']).toContain('cdn.taboola.com/libtrc/unip/');
     for (const html of Object.values(disabled.articleHtml)) {
       expect(html).not.toContain('href="/butce-plani/"');
+      expect(html).not.toContain('class="article-funnel-callout"');
+      expect(html).toContain('class="article-toc"');
     }
     for (const route of funnelRoutes) {
       expect(disabled.routeHtml[route]).not.toContain('2084914');
@@ -106,7 +108,7 @@ describe('lead funnel route gating', () => {
     expect(disabled.routeHtml['butce-plani']).not.toContain("campaignParams.get('utm_content')");
   });
 
-  it('indexes enabled routes and links twice from every article', () => {
+  it('indexes enabled routes and exposes four funnel entries in every article', () => {
     for (const route of funnelRoutes) {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
@@ -135,17 +137,19 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="transfer_consent"');
     expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
     expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
-    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 2);
+    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 4);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
       new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),
     );
     for (const html of Object.values(enabled.articleHtml)) {
       const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
-      expect(linkIndexes).toHaveLength(2);
+      expect(linkIndexes).toHaveLength(4);
       expect(faqIndex).toBeGreaterThan(-1);
-      expect(linkIndexes[0]).toBeLessThan(faqIndex);
-      expect(linkIndexes[1]).toBeGreaterThan(faqIndex);
+      expect(html.match(/class="article-funnel-callout"/g)).toHaveLength(1);
+      expect(html).toContain('class="article-toc"');
+      expect(linkIndexes.slice(0, 3).every((index) => index < faqIndex)).toBe(true);
+      expect(linkIndexes[3]).toBeGreaterThan(faqIndex);
     }
     expect(enabled.anchorPages['aydinlatma-metni']).toEqual(['butce-plani/index.html']);
     expect(enabled.anchorPages.tesekkurler).toEqual([]);
