@@ -8,11 +8,25 @@ const dist = join(root, 'dist');
 const astroCli = join(root, 'node_modules/astro/astro.js');
 const funnelRoutes = ['aydinlatma-metni', 'butce-plani', 'tesekkurler'];
 const publicRoutes = ['gizlilik-politikasi', 'iletisim'];
+const articleSlugs = [
+  '50-30-20-kurali',
+  'acil-durum-fonu',
+  'basit-butce-sistemi',
+  'cocuklara-para-egitimi',
+  'finansal-hedef-belirleme',
+  'finansal-okuryazarlik-nedir',
+  'gelir-gider-tablosu-sablonu',
+  'gizli-abonelikler',
+  'kredi-karti-ekstresi-okuma',
+  'maas-gelmeden-biten-para',
+  'market-alisverisi-tasarruf',
+  'zarf-yontemi-butceleme',
+];
 
 interface BuildState {
   routeHtml: Record<string, string>;
   publicHtml: Record<string, string>;
-  articleHtml: string;
+  articleHtml: Record<string, string>;
   sitemap: string;
   rss: string;
   anchorPages: Record<string, string[]>;
@@ -53,7 +67,7 @@ function build(enabled: boolean): BuildState {
   return {
     routeHtml: Object.fromEntries(funnelRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
     publicHtml: Object.fromEntries(publicRoutes.map((route) => [route, readFileSync(join(dist, route, 'index.html'), 'utf8')])),
-    articleHtml: readFileSync(join(dist, 'blog', 'basit-butce-sistemi', 'index.html'), 'utf8'),
+    articleHtml: Object.fromEntries(articleSlugs.map((slug) => [slug, readFileSync(join(dist, 'blog', slug, 'index.html'), 'utf8')])),
     sitemap,
     rss: readFileSync(join(dist, 'rss.xml'), 'utf8'),
     anchorPages,
@@ -80,8 +94,11 @@ describe('lead funnel route gating', () => {
       expect(disabled.publicHtml[route]).not.toContain('<meta name="robots"');
       expect(disabled.sitemap).toContain(`/${route}/`);
     }
-    expect(disabled.articleHtml).toContain('data-event="page_view"');
-    expect(disabled.articleHtml).toContain('cdn.taboola.com/libtrc/unip/');
+    expect(disabled.articleHtml['basit-butce-sistemi']).toContain('data-event="page_view"');
+    expect(disabled.articleHtml['basit-butce-sistemi']).toContain('cdn.taboola.com/libtrc/unip/');
+    for (const html of Object.values(disabled.articleHtml)) {
+      expect(html).not.toContain('href="/butce-plani/"');
+    }
     for (const route of funnelRoutes) {
       expect(disabled.routeHtml[route]).not.toContain('2084914');
       expect(disabled.routeHtml[route]).not.toContain('G-NKNZXPZ73N');
@@ -89,7 +106,7 @@ describe('lead funnel route gating', () => {
     expect(disabled.routeHtml['butce-plani']).not.toContain("campaignParams.get('utm_content')");
   });
 
-  it('indexes enabled routes and links from exactly five articles', () => {
+  it('indexes enabled routes and links twice from every article', () => {
     for (const route of funnelRoutes) {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
@@ -99,7 +116,7 @@ describe('lead funnel route gating', () => {
       expect(enabled.publicHtml[route]).not.toContain('<meta name="robots"');
       expect(enabled.sitemap).toContain(`/${route}/`);
     }
-    expect(enabled.articleHtml).toContain('data-event="page_view"');
+    expect(enabled.articleHtml['basit-butce-sistemi']).toContain('data-event="page_view"');
     expect(enabled.routeHtml['butce-plani']).toContain('data-event="step_1"');
     expect(enabled.routeHtml.tesekkurler).toContain('data-event="lead"');
     for (const route of ['butce-plani', 'tesekkurler']) {
@@ -118,14 +135,18 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="transfer_consent"');
     expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
     expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
-    expect(enabled.anchorPages['butce-plani']).toHaveLength(5);
-    expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(new Set([
-      'blog/acil-durum-fonu/index.html',
-      'blog/basit-butce-sistemi/index.html',
-      'blog/gizli-abonelikler/index.html',
-      'blog/maas-gelmeden-biten-para/index.html',
-      'blog/market-alisverisi-tasarruf/index.html',
-    ]));
+    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 2);
+    expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
+      new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),
+    );
+    for (const html of Object.values(enabled.articleHtml)) {
+      const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
+      const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
+      expect(linkIndexes).toHaveLength(2);
+      expect(faqIndex).toBeGreaterThan(-1);
+      expect(linkIndexes[0]).toBeLessThan(faqIndex);
+      expect(linkIndexes[1]).toBeGreaterThan(faqIndex);
+    }
     expect(enabled.anchorPages['aydinlatma-metni']).toEqual(['butce-plani/index.html']);
     expect(enabled.anchorPages.tesekkurler).toEqual([]);
   });

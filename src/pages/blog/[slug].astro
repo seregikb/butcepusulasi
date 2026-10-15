@@ -5,15 +5,8 @@ import ArticleCard from '@/components/ArticleCard.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import CoverArt from '@/components/CoverArt.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { ARTICLE_FUNNEL_LINKS } from '@/data/article-funnel-links';
 import { CATEGORIES, SITE } from '@/lib/site';
-
-const trafficArticles = new Set([
-  'basit-butce-sistemi',
-  'maas-gelmeden-biten-para',
-  'gizli-abonelikler',
-  'market-alisverisi-tasarruf',
-  'acil-durum-fonu',
-]);
 
 export const getStaticPaths = (async () => {
   const posts = await getCollection('blog');
@@ -22,6 +15,7 @@ export const getStaticPaths = (async () => {
 
 const { post, posts } = Astro.props;
 const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+const funnelLinks = ARTICLE_FUNNEL_LINKS[post.id as keyof typeof ARTICLE_FUNNEL_LINKS];
 const { Content } = await render(post);
 const related = post.data.relatedPosts
   .map((id: string) => posts.find((entry: typeof post) => entry.id === id))
@@ -75,8 +69,8 @@ const faqSchema = post.data.faq ? {
     </div>
     <div class="prose mx-auto mt-6 md:mt-10">
       <Content />
-      {funnelEnabled && trafficArticles.has(post.id) && (
-        <p><a href="/butce-plani/">Kişisel bütçe planınızı ve XLSX şablonunu görüntüleyin.</a></p>
+      {funnelEnabled && funnelLinks && (
+        <p>{funnelLinks.end.before}<a href="/butce-plani/">{funnelLinks.end.anchor}</a>{funnelLinks.end.after}</p>
       )}
     </div>
   </article>
