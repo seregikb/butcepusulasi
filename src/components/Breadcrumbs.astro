@@ -6,13 +6,24 @@ interface Item {
 
 interface Props {
   items: Item[];
+  mobileItems?: Item[];
 }
 
-const { items } = Astro.props;
+const { items, mobileItems } = Astro.props;
 ---
 
 <nav aria-label="İçerik yolu" class="mb-3 text-xs text-muted md:mb-7 md:text-sm">
-  <ol class="m-0 flex list-none flex-nowrap items-center gap-2 p-0 md:flex-wrap">
+  {mobileItems && (
+    <ol class="m-0 flex list-none flex-nowrap items-center gap-2 p-0 md:hidden">
+      {mobileItems.map((item, index) => (
+        <li class="flex items-center gap-2">
+          {item.href ? <a class="hover:text-accent hover:underline" href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+          {index < mobileItems.length - 1 && <span aria-hidden="true">/</span>}
+        </li>
+      ))}
+    </ol>
+  )}
+  <ol class:list={['m-0 list-none flex-nowrap items-center gap-2 p-0 md:flex-wrap', mobileItems ? 'hidden md:flex' : 'flex']}>
     {items.map((item, index) => (
       <li class:list={['items-center gap-2', index === 1 ? 'flex' : 'hidden md:flex']}>
         {item.href ? <a class="hover:text-accent hover:underline" href={item.href}>{item.label}</a> : <span aria-current="page">{item.label}</span>}

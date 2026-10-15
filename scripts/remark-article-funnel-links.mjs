@@ -61,7 +61,7 @@ function tableOfContents(headings, enabled) {
 function callout({ description, anchor }) {
   return {
     type: 'html',
-    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ARAÇ</p><p>${escapeHtml(description)}</p><p class="article-funnel-callout__link"><a class="article-funnel-link" href="/butce-plani/">${escapeHtml(anchor)}</a></p></aside>`,
+    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ŞABLON</p><p>${escapeHtml(description)}</p><p class="article-funnel-callout__link"><a class="article-funnel-link" href="/butce-plani/">${escapeHtml(anchor)}</a></p></aside>`,
   };
 }
 
@@ -87,18 +87,29 @@ export default function remarkArticleFunnelLinks({ enabled, links }) {
       });
 
     const tocHeadings = headings.filter(({ title }) => !['Sık Sorulan Sorular', 'İlgili yazılar'].includes(title));
+    const faqIndex = tree.children.findIndex(
+      (node) => node.type === 'heading' && node.depth === 2 && textContent(node) === 'Sık Sorulan Sorular',
+    );
+    const articleBody = faqIndex === -1 ? tree.children : tree.children.slice(0, faqIndex);
+    const bodyParagraphs = articleBody.filter((node) => node.type === 'paragraph');
+    if (bodyParagraphs.length < 2) throw new Error(`Second body paragraph not found for ${slug}`);
+
     const firstParagraphIndex = tree.children.findIndex((node) => node.type === 'paragraph');
     if (firstParagraphIndex === -1) throw new Error(`Lead paragraph not found for ${slug}`);
     tree.children.splice(firstParagraphIndex + 1, 0, tableOfContents(tocHeadings, enabled));
 
-    const firstHeadingIndex = tree.children.findIndex((node) => node === headings[0]?.node);
-    const secondHeadingIndex = tree.children.findIndex(
-      (node, index) => index > firstHeadingIndex && node.type === 'heading' && node.depth === 2,
-    );
-    if (firstHeadingIndex === -1 || secondHeadingIndex === -1) {
-      throw new Error(`First content section not found for ${slug}`);
+    if (enabled) {
+      const secondParagraphIndex = tree.children.findIndex((node) => node === bodyParagraphs[1]);
+      const nextNode = tree.children[secondParagraphIndex + 1];
+      let calloutAfterIndex = secondParagraphIndex;
+      if (nextNode?.type === 'heading') {
+        calloutAfterIndex = tree.children.findIndex(
+          (node, index) => index > secondParagraphIndex && node.type === 'paragraph',
+        );
+        if (calloutAfterIndex === -1) throw new Error(`Paragraph after heading not found for ${slug}`);
+      }
+      tree.children.splice(calloutAfterIndex + 1, 0, callout(article.callout));
     }
-    if (enabled) tree.children.splice(secondHeadingIndex, 0, callout(article.callout));
 
     const headingIndex = tree.children.findIndex(
       (node) => node.type === 'heading' && textContent(node) === article.midAfterHeading,

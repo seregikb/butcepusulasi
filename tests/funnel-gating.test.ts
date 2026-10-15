@@ -144,10 +144,18 @@ describe('lead funnel route gating', () => {
     for (const html of Object.values(enabled.articleHtml)) {
       const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
+      const prose = html.match(/<div class="prose[^>]*>([\s\S]*?)<\/div>\s*<\/article>/)?.[1] || '';
+      const calloutIndex = prose.indexOf('<aside class="article-funnel-callout">');
+      const contentBeforeCallout = prose
+        .slice(0, calloutIndex)
+        .replace(/<nav class="article-toc"[\s\S]*?<\/nav>/, '');
       expect(linkIndexes).toHaveLength(4);
       expect(faqIndex).toBeGreaterThan(-1);
       expect(html.match(/class="article-funnel-callout"/g)).toHaveLength(1);
+      expect(html).toContain('class="article-funnel-callout__label">ŞABLON</p>');
+      expect(html).not.toContain('>ARAÇ</p>');
       expect(html).toContain('class="article-toc"');
+      expect(contentBeforeCallout.match(/<p(?:\s|>)/g)).toHaveLength(3);
       expect(linkIndexes.slice(0, 3).every((index) => index < faqIndex)).toBe(true);
       expect(linkIndexes[3]).toBeGreaterThan(faqIndex);
     }
