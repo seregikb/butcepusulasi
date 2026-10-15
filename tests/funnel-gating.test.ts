@@ -99,7 +99,8 @@ describe('lead funnel route gating', () => {
     for (const html of Object.values(disabled.articleHtml)) {
       expect(html).not.toContain('href="/butce-plani/"');
       expect(html).not.toContain('class="article-funnel-callout"');
-      expect(html).toContain('class="article-toc"');
+      expect(html).toContain('<details class="article-toc"><summary class="article-toc__title">İçindekiler</summary>');
+      expect(html).not.toContain('<details class="article-toc" open');
     }
     for (const route of funnelRoutes) {
       expect(disabled.routeHtml[route]).not.toContain('2084914');
@@ -145,17 +146,22 @@ describe('lead funnel route gating', () => {
       const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
       const prose = html.match(/<div class="prose[^>]*>([\s\S]*?)<\/div>\s*<\/article>/)?.[1] || '';
+      const firstParagraphIndex = prose.search(/<p(?:\s|>)/);
       const calloutIndex = prose.indexOf('<aside class="article-funnel-callout">');
-      const contentBeforeCallout = prose
-        .slice(0, calloutIndex)
-        .replace(/<nav class="article-toc"[\s\S]*?<\/nav>/, '');
+      const tocIndex = prose.indexOf('<details class="article-toc">');
+      const firstHeadingIndex = prose.indexOf('<h2');
       expect(linkIndexes).toHaveLength(4);
       expect(faqIndex).toBeGreaterThan(-1);
       expect(html.match(/class="article-funnel-callout"/g)).toHaveLength(1);
       expect(html).toContain('class="article-funnel-callout__label">ŞABLON</p>');
       expect(html).not.toContain('>ARAÇ</p>');
-      expect(html).toContain('class="article-toc"');
-      expect(contentBeforeCallout.match(/<p(?:\s|>)/g)).toHaveLength(3);
+      expect(prose).toContain('<summary class="article-toc__title">İçindekiler</summary>');
+      expect(prose).not.toContain('<details class="article-toc" open');
+      expect(firstParagraphIndex).toBeGreaterThanOrEqual(0);
+      expect(calloutIndex).toBeGreaterThan(firstParagraphIndex);
+      expect(tocIndex).toBeGreaterThan(calloutIndex);
+      expect(firstHeadingIndex).toBeGreaterThan(tocIndex);
+      expect(prose.slice(0, calloutIndex).match(/<p(?:\s|>)/g)).toHaveLength(1);
       expect(linkIndexes.slice(0, 3).every((index) => index < faqIndex)).toBe(true);
       expect(linkIndexes[3]).toBeGreaterThan(faqIndex);
     }

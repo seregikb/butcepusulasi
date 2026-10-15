@@ -54,7 +54,7 @@ function tableOfContents(headings, enabled) {
 
   return {
     type: 'html',
-    value: `<nav class="article-toc" aria-label="İçindekiler"><p class="article-toc__title">İçindekiler</p><ul>${items.join('')}</ul></nav>`,
+    value: `<details class="article-toc"><summary class="article-toc__title">İçindekiler</summary><nav aria-label="İçindekiler"><ul>${items.join('')}</ul></nav></details>`,
   };
 }
 
@@ -87,29 +87,15 @@ export default function remarkArticleFunnelLinks({ enabled, links }) {
       });
 
     const tocHeadings = headings.filter(({ title }) => !['Sık Sorulan Sorular', 'İlgili yazılar'].includes(title));
-    const faqIndex = tree.children.findIndex(
-      (node) => node.type === 'heading' && node.depth === 2 && textContent(node) === 'Sık Sorulan Sorular',
-    );
-    const articleBody = faqIndex === -1 ? tree.children : tree.children.slice(0, faqIndex);
-    const bodyParagraphs = articleBody.filter((node) => node.type === 'paragraph');
-    if (bodyParagraphs.length < 2) throw new Error(`Second body paragraph not found for ${slug}`);
-
     const firstParagraphIndex = tree.children.findIndex((node) => node.type === 'paragraph');
-    if (firstParagraphIndex === -1) throw new Error(`Lead paragraph not found for ${slug}`);
-    tree.children.splice(firstParagraphIndex + 1, 0, tableOfContents(tocHeadings, enabled));
+    if (firstParagraphIndex === -1) throw new Error(`First body paragraph not found for ${slug}`);
 
+    let tocInsertAt = firstParagraphIndex + 1;
     if (enabled) {
-      const secondParagraphIndex = tree.children.findIndex((node) => node === bodyParagraphs[1]);
-      const nextNode = tree.children[secondParagraphIndex + 1];
-      let calloutAfterIndex = secondParagraphIndex;
-      if (nextNode?.type === 'heading') {
-        calloutAfterIndex = tree.children.findIndex(
-          (node, index) => index > secondParagraphIndex && node.type === 'paragraph',
-        );
-        if (calloutAfterIndex === -1) throw new Error(`Paragraph after heading not found for ${slug}`);
-      }
-      tree.children.splice(calloutAfterIndex + 1, 0, callout(article.callout));
+      tree.children.splice(tocInsertAt, 0, callout(article.callout));
+      tocInsertAt += 1;
     }
+    tree.children.splice(tocInsertAt, 0, tableOfContents(tocHeadings, enabled));
 
     const headingIndex = tree.children.findIndex(
       (node) => node.type === 'heading' && textContent(node) === article.midAfterHeading,

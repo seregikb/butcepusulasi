@@ -128,8 +128,11 @@ a {
 }
 
 .article-toc .article-toc__title {
-  margin-bottom: 0.5em;
   font-weight: 700;
+}
+
+.article-toc[open] .article-toc__title {
+  margin-bottom: 0.5em;
 }
 
 .article-toc ul {
