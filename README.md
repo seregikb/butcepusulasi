@@ -51,7 +51,9 @@ Copy `.env.example` to `.env` for local values. Do not commit secrets.
 | `TABOOLA_S2S_ENDPOINT` | Server-only base URL for Taboola conversion postbacks |
 | `TABOOLA_EVENT_NAME` | Taboola Realize Event Name used by S2S postbacks |
 
-Optionally bind a Cloudflare KV namespace to the Pages Function as `LEAD_FAILURES`. Failed partner deliveries are stored under `failed-leads/<timestamp>/<uuid>` and can be read in Cloudflare Dashboard under **Storage & Databases > KV > your namespace**. Without the binding, failed submissions are emitted as structured JSON in Pages Function logs; healthy lead delivery is never blocked.
+Optionally bind a Cloudflare KV namespace to the Pages Function as `LEAD_FAILURES`. Failed partner deliveries are stored under `failed-leads/<timestamp>/<uuid>` and can be read in Cloudflare Dashboard under **Storage & Databases > KV > your namespace**. Records expire after 30 days (2592000 seconds). Each record contains `timestamp`, the mapped `partnerPayload`, `qualificationAnswers` (`gelir_araligi`, `hane_buyuklugu`, `hedef`), and the boolean `processing_consent`. Raw form fields, honeypot, user agent, and raw Accept-Language are not stored. Without the binding, only sanitized delivery diagnostics are logged; healthy lead delivery is never blocked.
+
+To purge legacy records older than 30 days (or with unusable timestamps), set `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `LEAD_FAILURES_NAMESPACE_ID`, then run `node scripts/purge-lead-failures.mjs` to inspect counts and `node scripts/purge-lead-failures.mjs --apply` to delete. The script scans every key with pagination and prints counts only.
 
 Analytics and advertising scripts are injected only after explicit cookie acceptance.
 

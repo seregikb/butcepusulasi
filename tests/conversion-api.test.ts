@@ -240,7 +240,7 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('stores every field in KV before returning a lead-delivery error', async () => {
+  it('stores only redelivery fields with 30-day retention before returning an error', async () => {
     const partnerBody = JSON.stringify({
       result: false,
       code: 'PARTNER_ERROR',
@@ -263,13 +263,13 @@ describe('lead conversion endpoint', () => {
     const [key, serialized] = failureStore.put.mock.calls[0] as [string, string];
     expect(key).toMatch(/^failed-leads\/\d{4}-\d{2}-\d{2}T/);
     const stored = JSON.parse(serialized);
-    expect(stored.downstreamStatus).toBe(500);
-    expect(stored.downstreamBody).toBe(partnerBody.slice(0, 2000));
-    expect(stored.downstreamCode).toBe('PARTNER_ERROR');
-    expect(stored.downstreamMessage).toBe('INVALID_PHONE');
+    expect(failureStore.put.mock.calls[0]?.[2]).toEqual({ expirationTtl: 2592000 });
+    expect(Object.keys(stored).sort()).toEqual(['partnerPayload', 'processing_consent', 'qualificationAnswers', 'timestamp']);
+    expect(stored.partnerPayload).toEqual(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string));
+    expect(stored.qualificationAnswers).toEqual({ gelir_araligi: '₺30.001–₺50.000', hane_buyuklugu: '2 kişi', hedef: 'Harcamaları düzenlemek' });
+    expect(stored.processing_consent).toBe(true);
     expect(stored.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(stored.fields).toEqual(Object.fromEntries(leadForm({ tblci: 'recover-me' })));
-    expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string).downstreamBody).toBe(partnerBody.slice(0, 2000));
+    expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string)).toMatchObject({ downstreamStatus: 500, downstreamCode: 'PARTNER_ERROR', downstreamMessage: 'INVALID_PHONE', click_id: 'recover-me', recoveryKey: key });
   });
 
   it('accepts a duplicate without firing Taboola', async () => {
@@ -310,7 +310,7 @@ describe('lead conversion endpoint', () => {
       message: { lastname: ['Lastname cannot be blank.'] },
     }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const waitUntil = vi.fn();
 
     const response = await onRequestPost({
@@ -327,16 +327,15 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(waitUntil).not.toHaveBeenCalled();
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
-    expect(stored.downstreamStatus).toBe(200);
-    expect(stored.downstreamCode).toBe('ERROR');
-    expect(stored.downstreamMessage).toBe('{"lastname":["Lastname cannot be blank."]}');
+    expect(stored.partnerPayload.click_id).toBe('rejected-click');
+    expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string).downstreamMessage).toBe('{}');
   });
 
   it('rejects a non-JSON partner response without firing Taboola', async () => {
     const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
     const fetchMock = vi.fn().mockResolvedValue(new Response('<html>bad gateway</html>', { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const waitUntil = vi.fn();
 
     const response = await onRequestPost({
@@ -349,9 +348,8 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(waitUntil).not.toHaveBeenCalled();
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
-    expect(stored.downstreamBody).toBe('<html>bad gateway</html>');
-    expect(stored.downstreamCode).toBe('');
-    expect(stored.downstreamMessage).toBe('');
+    expect(stored.partnerPayload.click_id).toBe('malformed-click');
+    expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string)).toMatchObject({ downstreamStatus: 200, downstreamCode: '', downstreamMessage: '' });
   });
 
   it('stores the submission when the lead request has a network failure', async () => {
@@ -372,10 +370,8 @@ describe('lead conversion endpoint', () => {
     expect(response.status).toBe(502);
     expect(failureStore.put).toHaveBeenCalledOnce();
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
-    expect(stored.downstreamStatus).toBe('network_error');
-    expect(stored.downstreamBody).toBe('upstream connection closed');
-    expect(stored.downstreamCode).toBe('');
-    expect(stored.downstreamMessage).toBe('');
+    expect(stored.partnerPayload.email).toBe('ayse@example.com');
+    expect(failureStore.put.mock.calls[0]?.[2]).toEqual({ expirationTtl: 2592000 });
   });
 
   it('does not fail the lead request when Taboola fails', async () => {
@@ -414,7 +410,7 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it('logs structured recovery JSON when delivery and unbound KV both fail', async () => {
+  it('logs only allowed diagnostics when delivery and unbound KV both fail', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 500 }));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     vi.stubGlobal('fetch', fetchMock);
@@ -427,11 +423,33 @@ describe('lead conversion endpoint', () => {
 
     expect(response.status).toBe(502);
     const record = JSON.parse(errorSpy.mock.calls[0]?.[0] as string);
-    expect(record.event).toBe('lead_delivery_failed');
     expect(record.downstreamStatus).toBe(500);
-    expect(record.downstreamBody).toBe('');
     expect(record.downstreamCode).toBe('');
     expect(record.downstreamMessage).toBe('');
-    expect(record.fields.tblci).toBe('log-me');
+    expect(record.click_id).toBe('log-me');
+    expect(Object.keys(record).sort()).toEqual(['click_id', 'creo', 'downstreamCode', 'downstreamMessage', 'downstreamStatus', 'timestamp']);
+  });
+
+  it.each([false, true])('strips nested personal keys and echoed values (KV rejects: %s)', async (kvRejects) => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const failureStore = { put: kvRejects ? vi.fn().mockRejectedValue(new Error('ayse@example.com')) : vi.fn().mockResolvedValue(undefined) };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      result: false,
+      code: 'ERROR',
+      message: {
+        EMAIL: 'hidden@example.com', phone: '+905301112233', name: 'Ayşe', firstName: 'Ayşe', lastName: 'Yılmaz',
+        ad: 'Ayşe', soyad: 'Yılmaz', eposta: 'ayse@example.com', telefon: '+905301112233',
+        gelir_araligi: 'private', hane_buyuklugu: 'private', hedef: 'private', processing_consent: 'on', website: 'private',
+        nested: [{ Email: 'hidden@example.com', detail: 'AYŞE YILMAZ ayse@example.com +90 530 111 22 33' }],
+        serialized: JSON.stringify({ firstname: 'Ayşe', reason: 'INVALID' }),
+        reason: 'INVALID',
+      },
+    }), { status: 422 })));
+    const response = await onRequestPost({ request: request(leadForm()), env: env({ LEAD_FAILURES: failureStore }), waitUntil: vi.fn() });
+    expect(response.status).toBe(502);
+    expect(errorSpy).toHaveBeenCalledOnce();
+    const logged = JSON.parse(errorSpy.mock.calls[0]?.[0] as string);
+    expect(Object.keys(logged).sort()).toEqual(['click_id', 'creo', 'downstreamCode', 'downstreamMessage', 'downstreamStatus', ...(kvRejects ? [] : ['recoveryKey']), 'timestamp'].sort());
+    expect(JSON.parse(logged.downstreamMessage)).toEqual({ nested: [{ detail: '[REDACTED] [REDACTED] [REDACTED] [REDACTED]' }], serialized: '{"reason":"INVALID"}', reason: 'INVALID' });
   });
 });

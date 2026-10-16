@@ -9,7 +9,7 @@ interface PagesContext {
     TABOOLA_S2S_ENDPOINT?: string;
     TABOOLA_EVENT_NAME?: string;
     LEAD_FAILURES?: {
-      put(key: string, value: string): Promise<void>;
+      put(key: string, value: string, options: { expirationTtl: number }): Promise<void>;
     };
   };
 }
@@ -21,24 +21,9 @@ function json(data: Record<string, unknown>, status = 200): Response {
   });
 }
 
-function serializeForm(form: FormData): Record<string, string | string[]> {
-  const fields: Record<string, string | string[]> = {};
-  for (const [name, rawValue] of form.entries()) {
-    const value = typeof rawValue === 'string' ? rawValue : rawValue.name;
-    const existing = fields[name];
-    if (existing === undefined) fields[name] = value;
-    else fields[name] = Array.isArray(existing) ? [...existing, value] : [existing, value];
-  }
-  return fields;
-}
-
 function languageFromHeader(value: string | null): string {
   const firstTag = value?.split(',')[0]?.split(';')[0]?.trim() || '';
   return firstTag.match(/^[A-Za-z]{2}/)?.[0].toUpperCase() || '';
-}
-
-function truncateDownstreamBody(body: string): string {
-  return body.slice(0, 2000);
 }
 
 async function readResponseBody(response: Response): Promise<string> {
@@ -49,14 +34,42 @@ async function readResponseBody(response: Response): Promise<string> {
   }
 }
 
-async function readNetworkErrorBody(error: unknown): Promise<string> {
-  if (error instanceof Response) return readResponseBody(error);
-  if (!error || typeof error !== 'object') return '';
-
-  const { body, response } = error as { body?: unknown; response?: unknown };
-  if (typeof body === 'string') return body;
-  if (response instanceof Response) return readResponseBody(response);
-  return '';
+// Only partner code/message may cross this boundary; never log a raw body or error.
+function safePartnerDiagnostic(value: string, form: FormData): string {
+  const personalKey = /email|phone|name|soyad|eposta|telefon|^ad$|gelir_araligi|hane_buyuklugu|hedef|processing_consent|website/i;
+  const submittedValues = ['ad', 'soyad', 'eposta', 'telefon', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent', 'website']
+    .flatMap((field) => form.getAll(field).flatMap((item) => {
+      const text = String(item).trim();
+      return field === 'ad' || field === 'soyad' ? [text, ...text.split(/\s+/)] : [text];
+    }))
+    .filter(Boolean);
+  function redact(text: string): string {
+    for (const submitted of submittedValues) {
+      const escaped = submitted.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = escaped.replace(/[iIıİ]/g, '[iIıİ]');
+      text = text.replace(new RegExp(`(?<![\\p{L}\\p{N}_])${pattern}(?![\\p{L}\\p{N}_])`, 'giu'), '[REDACTED]');
+    }
+    return text
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED]')
+      .replace(/\+?\d[\d ()-]{6,}\d/g, '[REDACTED]');
+  }
+  function strip(item: unknown): unknown {
+    if (typeof item === 'string') {
+      try {
+        const parsed: unknown = JSON.parse(item);
+        if (parsed && typeof parsed === 'object') return JSON.stringify(strip(parsed));
+      } catch { /* Plain-text partner messages are supported too. */ }
+      return redact(item);
+    }
+    if (Array.isArray(item)) return item.map(strip);
+    if (item && typeof item === 'object') {
+      return Object.fromEntries(Object.entries(item)
+        .filter(([key]) => !personalKey.test(key))
+        .map(([key, child]) => [redact(key), strip(child)]));
+    }
+    return item;
+  }
+  return strip(value) as string;
 }
 
 function parsePartnerResponse(body: string): { result?: boolean; code: string; message: string } | null {
@@ -76,43 +89,49 @@ function parsePartnerResponse(body: string): { result?: boolean; code: string; m
 
 async function storeFailedLead(
   store: PagesContext['env']['LEAD_FAILURES'],
+  partnerPayload: Record<string, string>,
   form: FormData,
-  downstreamStatus: number | 'network_error',
-  downstreamBody: string,
-  downstreamCode: string,
-  downstreamMessage: string,
+  diagnostics: { downstreamStatus?: number; downstreamCode?: string; downstreamMessage?: string },
 ): Promise<void> {
   const timestamp = new Date().toISOString();
-  const record = {
-    event: 'lead_delivery_failed',
+  const diagnostic = {
+    ...diagnostics,
+    click_id: partnerPayload.click_id,
+    creo: partnerPayload.creo,
     timestamp,
-    downstreamStatus,
-    downstreamBody: truncateDownstreamBody(downstreamBody),
-    downstreamCode,
-    downstreamMessage,
-    fields: serializeForm(form),
   };
   if (!store) {
-    console.error(JSON.stringify(record));
+    console.error(JSON.stringify(diagnostic));
     return;
   }
 
+  const record = {
+    timestamp,
+    partnerPayload,
+    qualificationAnswers: {
+      gelir_araligi: String(form.get('gelir_araligi') || ''),
+      hane_buyuklugu: String(form.get('hane_buyuklugu') || ''),
+      hedef: String(form.get('hedef') || ''),
+    },
+    processing_consent: Boolean(form.get('processing_consent')),
+  };
   const key = `failed-leads/${timestamp}/${crypto.randomUUID()}`;
   try {
-    await store.put(key, JSON.stringify(record));
-    console.error(JSON.stringify({ ...record, recoveryKey: key }));
-  } catch (error) {
-    console.error(JSON.stringify({ ...record, recoveryStoreError: String(error) }));
+    await store.put(key, JSON.stringify(record), { expirationTtl: 2592000 });
+  } catch {
+    console.error(JSON.stringify(diagnostic));
+    return;
   }
+  console.error(JSON.stringify({ ...diagnostic, recoveryKey: key }));
 }
 
 async function sendTaboolaConversion(endpoint: string, eventName: string, tblci: string): Promise<void> {
   const url = `${endpoint}?click-id=${encodeURIComponent(tblci)}&name=${encodeURIComponent(eventName)}`;
   try {
     const response = await fetch(url);
-    if (!response.ok) console.error(`Taboola S2S conversion failed with status ${response.status}.`);
-  } catch (error) {
-    console.error('Taboola S2S conversion request failed.', error);
+    if (!response.ok) console.error(JSON.stringify({ click_id: tblci, timestamp: new Date().toISOString() }));
+  } catch {
+    console.error(JSON.stringify({ click_id: tblci, timestamp: new Date().toISOString() }));
   }
 }
 
@@ -155,15 +174,8 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(partnerPayload),
     });
-  } catch (error) {
-    const downstreamBody = await readNetworkErrorBody(error);
-    await storeFailedLead(env.LEAD_FAILURES, form, 'network_error', downstreamBody, '', '');
-    console.error(JSON.stringify({
-      event: 'lead_delivery_request_failed',
-      downstreamCode: '',
-      downstreamMessage: '',
-      error: String(error),
-    }));
+  } catch {
+    await storeFailedLead(env.LEAD_FAILURES, partnerPayload, form, {});
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
@@ -176,10 +188,11 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
 
   if (duplicate) {
     console.info(JSON.stringify({
-      event: 'lead_duplicate',
       downstreamStatus: response.status,
-      downstreamCode,
-      downstreamMessage,
+      downstreamCode: safePartnerDiagnostic(downstreamCode, form),
+      downstreamMessage: safePartnerDiagnostic(downstreamMessage, form),
+      click_id: tblci,
+      creo: partnerPayload.creo,
     }));
     return json({ ok: true });
   }
@@ -187,11 +200,13 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   if (!accepted) {
     await storeFailedLead(
       env.LEAD_FAILURES,
+      partnerPayload,
       form,
-      response.status,
-      downstreamBody,
-      downstreamCode,
-      downstreamMessage,
+      {
+        downstreamStatus: response.status,
+        downstreamCode: safePartnerDiagnostic(downstreamCode, form),
+        downstreamMessage: safePartnerDiagnostic(downstreamMessage, form),
+      },
     );
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }

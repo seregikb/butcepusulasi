@@ -1,4 +1,5 @@
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -39,8 +40,8 @@ function walk(dir: string): string[] {
   });
 }
 
-function build(enabled: boolean): BuildState {
-  execFileSync(process.execPath, [astroCli, 'build'], {
+async function build(enabled: boolean): Promise<BuildState> {
+  await promisify(execFile)(process.execPath, [astroCli, 'build'], {
     cwd: root,
     env: {
       ...process.env,
@@ -48,7 +49,7 @@ function build(enabled: boolean): BuildState {
       PUBLIC_TABOOLA_ID: '2084914',
       PUBLIC_GA4_ID: 'G-NKNZXPZ73N',
     },
-    stdio: 'pipe',
+    maxBuffer: 10 * 1024 * 1024,
   });
 
   const files = walk(dist);
@@ -77,9 +78,9 @@ function build(enabled: boolean): BuildState {
 let disabled: BuildState;
 let enabled: BuildState;
 
-beforeAll(() => {
-  disabled = build(false);
-  enabled = build(true);
+beforeAll(async () => {
+  disabled = await build(false);
+  enabled = await build(true);
 }, 120_000);
 
 describe('lead funnel route gating', () => {

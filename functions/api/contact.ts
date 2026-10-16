@@ -34,8 +34,8 @@ export async function onRequestPost({ request, env }: PagesContext): Promise<Res
       body: JSON.stringify({ name, email, message }),
     });
     if (!response.ok) return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
-  } catch (error) {
-    console.error('Contact delivery request failed.', error);
+  } catch {
+    console.error(JSON.stringify({ timestamp: new Date().toISOString() }));
     return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
