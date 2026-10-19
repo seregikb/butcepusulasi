@@ -133,6 +133,16 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" autocomplete="tel" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="ad" type="text" autocomplete="given-name" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="soyad" type="text" autocomplete="family-name" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="hane_buyuklugu"');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="hedef"');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('gelir_araligi');
+    expect(enabled.routeHtml['butce-plani']).toContain('data-lead-step="1"');
+    expect(enabled.routeHtml['butce-plani']).toContain('data-lead-step="2"');
+    const submitTag = enabled.routeHtml['butce-plani'].match(/<button id="lead-submit"[^>]*>/)?.[0] || '';
+    expect(submitTag).toContain('type="submit"');
+    expect(submitTag).not.toMatch(/\sdisabled(?:\s|=|>)/);
+    expect(enabled.routeHtml['butce-plani']).toContain('id="lead-next"');
+    expect(enabled.routeHtml['butce-plani']).toContain('Gelir tutarınızı sormuyoruz; kendi rakamlarınızı yalnızca indireceğiniz tabloya kendiniz yazarsınız.');
     expect(enabled.routeHtml['butce-plani']).toContain('name="creo" value=""');
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="iletisim_turu"');
     expect(enabled.routeHtml['butce-plani'].match(/<input\b[^>]*type="checkbox"[^>]*>/g)).toHaveLength(1);

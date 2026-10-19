@@ -3,13 +3,14 @@ interface Props {
   eyebrow?: string;
   title: string;
   description?: string;
+  compact?: boolean;
 }
 
-const { eyebrow, title, description } = Astro.props;
+const { eyebrow, title, description, compact = false } = Astro.props;
 ---
 
-<header class="container border-b border-rule py-12 md:py-16">
+<header class:list={['container border-b border-rule', compact ? 'py-8 md:py-12' : 'py-12 md:py-16']}>
   {eyebrow && <p class="mb-3 text-sm font-bold text-accent">{eyebrow}</p>}
-  <h1 class="max-w-4xl text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
-  {description && <p class="mt-5 max-w-2xl text-lg leading-8 text-muted md:text-xl">{description}</p>}
+  <h1 class:list={['max-w-4xl font-bold leading-tight', compact ? 'text-3xl md:text-5xl' : 'text-4xl md:text-6xl']}>{title}</h1>
+  {description && <p class:list={['max-w-2xl text-lg leading-8 text-muted md:text-xl', compact ? 'mt-4' : 'mt-5']}>{description}</p>}
 </header>

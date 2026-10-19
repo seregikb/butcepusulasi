@@ -36,8 +36,8 @@ async function readResponseBody(response: Response): Promise<string> {
 
 // Only partner code/message may cross this boundary; never log a raw body or error.
 function safePartnerDiagnostic(value: string, form: FormData): string {
-  const personalKey = /email|phone|name|soyad|eposta|telefon|^ad$|gelir_araligi|hane_buyuklugu|hedef|processing_consent|website/i;
-  const submittedValues = ['ad', 'soyad', 'eposta', 'telefon', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent', 'website']
+  const personalKey = /email|phone|name|soyad|eposta|telefon|^ad$|hane_buyuklugu|hedef|processing_consent|website/i;
+  const submittedValues = ['ad', 'soyad', 'eposta', 'telefon', 'hane_buyuklugu', 'hedef', 'processing_consent', 'website']
     .flatMap((field) => form.getAll(field).flatMap((item) => {
       const text = String(item).trim();
       return field === 'ad' || field === 'soyad' ? [text, ...text.split(/\s+/)] : [text];
@@ -109,7 +109,6 @@ async function storeFailedLead(
     timestamp,
     partnerPayload,
     qualificationAnswers: {
-      gelir_araligi: String(form.get('gelir_araligi') || ''),
       hane_buyuklugu: String(form.get('hane_buyuklugu') || ''),
       hedef: String(form.get('hedef') || ''),
     },
@@ -141,7 +140,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const form = await request.formData();
   if (String(form.get('website') || '')) return json({ ok: true });
 
-  const required = ['ad', 'soyad', 'gelir_araligi', 'hane_buyuklugu', 'hedef', 'processing_consent'];
+  const required = ['ad', 'soyad', 'hane_buyuklugu', 'hedef', 'processing_consent'];
   if (required.some((field) => !form.get(field))) return json({ ok: false, message: 'Eksik alan.' }, 400);
   const email = String(form.get('eposta') || '').trim();
   const phone = String(form.get('telefon') || '').trim();

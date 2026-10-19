@@ -7,60 +7,61 @@ import { PLACEHOLDERS } from '@/lib/placeholders';
 const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 ---
 
-<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Gelir aralığınız ve hane yapınıza göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu alın." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
-  <PageIntro eyebrow="Bütçe planı" title="Kişisel bütçe dağılımınızı ve XLSX şablonunu alın" description="Üç kısa soruyu yanıtlayın; verdiğiniz bilgiler karşılığında kişiselleştirilmiş bütçe özeti ve indirilebilir tablo sunulsun." />
-  <section class="container py-12">
-    <form id="lead-form" class="mx-auto max-w-2xl space-y-9" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)}>
-      <fieldset>
-        <legend class="mb-4 text-xl font-bold">Aylık net gelir aralığınız</legend>
-        <div class="grid gap-3 sm:grid-cols-2">
-          {['₺0–₺30.000', '₺30.001–₺50.000', '₺50.001–₺80.000', '₺80.001 ve üzeri'].map((value) => (
-            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="gelir_araligi" value={value} required /> {value}</label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend class="mb-4 text-xl font-bold">Hane büyüklüğünüz</legend>
-        <div class="grid gap-3 sm:grid-cols-2">
-          {['1 kişi', '2 kişi', '3–4 kişi', '5 kişi ve üzeri'].map((value) => (
-            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hane_buyuklugu" value={value} required /> {value}</label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend class="mb-4 text-xl font-bold">Öncelikli hedefiniz</legend>
-        <div class="grid gap-3">
-          {['Acil durum fonu oluşturmak', 'Harcamaları düzenlemek', 'Planlı bir gider için birikmek'].map((value) => (
-            <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hedef" value={value} required /> {value}</label>
-          ))}
-        </div>
-      </fieldset>
-      <div class="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label class="mb-2 block font-bold" for="ad">Adınız</label>
-          <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
-        </div>
-        <div>
-          <label class="mb-2 block font-bold" for="soyad">Soyadınız</label>
-          <input class="min-h-12 w-full border border-rule bg-white px-4" id="soyad" name="soyad" type="text" autocomplete="family-name" required maxlength="80" />
-        </div>
+<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Hane yapınız ve hedefinize göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu görüntüleyin." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
+  <PageIntro compact eyebrow="Bütçe planı" title="Kişisel bütçe dağılımı ve XLSX şablonu" description="İki kısa soruyu yanıtlayın; hane yapınıza ve hedefinize göre hazırlanan bütçe özetini ve indirilebilir XLSX tablosunu görüntüleyin." />
+  <section class="container py-8 md:py-12">
+    <form id="lead-form" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)}>
+      <div class="space-y-9" data-lead-step="1">
+        <fieldset>
+          <legend class="mb-4 text-xl font-bold">Hane büyüklüğünüz</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            {['1 kişi', '2 kişi', '3–4 kişi', '5 kişi ve üzeri'].map((value) => (
+              <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hane_buyuklugu" value={value} required /> {value}</label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="mb-4 text-xl font-bold">Öncelikli hedefiniz</legend>
+          <div class="grid gap-3">
+            {['Acil durum fonu oluşturmak', 'Harcamaları düzenlemek', 'Planlı bir gider için birikmek'].map((value) => (
+              <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hedef" value={value} required /> {value}</label>
+            ))}
+          </div>
+        </fieldset>
+        <p>Gelir tutarınızı sormuyoruz; kendi rakamlarınızı yalnızca indireceğiniz tabloya kendiniz yazarsınız.</p>
+        <button id="lead-next" class="min-h-12 border border-accent bg-paper px-6 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled hidden>Devam</button>
       </div>
-      <div>
-        <label class="mb-2 block font-bold" for="eposta">E-posta adresiniz</label>
-        <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" autocomplete="email" required maxlength="160" />
-      </div>
-      <div>
-        <label class="mb-2 block font-bold" for="telefon">Telefon numaranız</label>
-        <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" autocomplete="tel" required maxlength="30" />
+      <div class="space-y-9" data-lead-step="2">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="mb-2 block font-bold" for="ad">Adınız</label>
+            <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
+          </div>
+          <div>
+            <label class="mb-2 block font-bold" for="soyad">Soyadınız</label>
+            <input class="min-h-12 w-full border border-rule bg-white px-4" id="soyad" name="soyad" type="text" autocomplete="family-name" required maxlength="80" />
+          </div>
+        </div>
+        <div>
+          <label class="mb-2 block font-bold" for="eposta">E-posta adresiniz</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" autocomplete="email" required maxlength="160" />
+        </div>
+        <div>
+          <label class="mb-2 block font-bold" for="telefon">Telefon numaranız</label>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" autocomplete="tel" required maxlength="30" />
+        </div>
+        <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
+          <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span>{enabled ? <a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a> : <strong>Aydınlatma Metni</strong>}'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
+        </div>
+        <div class="flex flex-wrap items-center gap-5">
+          <button id="lead-back" class="font-semibold text-accent underline underline-offset-4" type="button" hidden>Geri</button>
+          <button id="lead-submit" class="min-h-12 border border-accent bg-accent px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" type="submit">Planımı oluştur</button>
+        </div>
+        <p id="lead-status" class="min-h-6 text-sm font-semibold" role="status" aria-live="polite"></p>
       </div>
       <input type="hidden" id="tblci" name="tblci" value="" />
       <input type="hidden" id="creo" name="creo" value="" />
       <HoneypotField />
-      <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
-        <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span>{enabled ? <a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a> : <strong>Aydınlatma Metni</strong>}'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
-      </div>
-      <button id="lead-submit" class="min-h-12 border border-accent bg-accent px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" type="submit" disabled>Planımı oluştur</button>
-      <p id="lead-status" class="min-h-6 text-sm font-semibold" role="status" aria-live="polite"></p>
     </form>
   </section>
 </BaseLayout>
@@ -69,6 +70,10 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   const enabled = document.querySelector('#lead-form')?.dataset.funnelEnabled === 'true';
   document.body.dataset.conversionEvent = enabled ? 'funnel_view' : '';
   const leadForm = document.querySelector('#lead-form');
+  const stepOne = document.querySelector('[data-lead-step="1"]');
+  const stepTwo = document.querySelector('[data-lead-step="2"]');
+  const nextButton = document.querySelector('#lead-next');
+  const backButton = document.querySelector('#lead-back');
   const leadButton = document.querySelector('#lead-submit');
   const leadStatus = document.querySelector('#lead-status');
   const tblciInput = document.querySelector('#tblci');
@@ -76,15 +81,54 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   if (tblciInput instanceof HTMLInputElement) tblciInput.value = sessionStorage.getItem('tblci') || '';
   if (creoInput instanceof HTMLInputElement) creoInput.value = sessionStorage.getItem('creo') || '';
 
+  function stepOneComplete() {
+    if (!(leadForm instanceof HTMLFormElement)) return false;
+    return ['hane_buyuklugu', 'hedef'].every((name) => leadForm.querySelector(`input[name="${name}"]:checked`));
+  }
+
+  function updateNextButton() {
+    if (nextButton instanceof HTMLButtonElement) nextButton.disabled = !stepOneComplete();
+  }
+
+  function showStep(step) {
+    if (!(stepOne instanceof HTMLElement) || !(stepTwo instanceof HTMLElement)) return;
+    stepOne.hidden = step !== 1;
+    stepTwo.hidden = step !== 2;
+  }
+
   function updateLeadButton() {
     if (!(leadForm instanceof HTMLFormElement) || !(leadButton instanceof HTMLButtonElement)) return;
     const consents = [...leadForm.querySelectorAll('input[type="checkbox"][required]')];
     leadButton.disabled = !consents.every((input) => input instanceof HTMLInputElement && input.checked);
   }
+  if (stepOne instanceof HTMLElement && stepTwo instanceof HTMLElement && nextButton instanceof HTMLButtonElement && backButton instanceof HTMLButtonElement) {
+    nextButton.hidden = false;
+    backButton.hidden = false;
+    showStep(1);
+    updateNextButton();
+    leadForm?.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', updateNextButton));
+    nextButton.addEventListener('click', () => {
+      if (!stepOneComplete()) return;
+      showStep(2);
+      document.querySelector('#ad')?.focus();
+    });
+    backButton.addEventListener('click', () => {
+      showStep(1);
+      document.querySelector('input[name="hane_buyuklugu"]')?.focus();
+    });
+  }
+  if (leadButton instanceof HTMLButtonElement) leadButton.disabled = true;
+  updateLeadButton();
   leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateLeadButton));
   leadForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement) || !leadForm.reportValidity()) return;
+    if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement)) return;
+    if (!stepOneComplete()) {
+      showStep(1);
+      leadForm.reportValidity();
+      return;
+    }
+    if (!leadForm.reportValidity()) return;
     leadButton.disabled = true;
     leadStatus.textContent = 'Bilgiler gönderiliyor…';
     try {

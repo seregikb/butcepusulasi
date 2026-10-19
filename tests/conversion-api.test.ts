@@ -5,7 +5,6 @@ function leadForm(overrides: Record<string, string> = {}): FormData {
   const values = {
     ad: 'Ayşe',
     soyad: 'Yılmaz',
-    gelir_araligi: '₺30.001–₺50.000',
     hane_buyuklugu: '2 kişi',
     hedef: 'Harcamaları düzenlemek',
     eposta: 'ayse@example.com',
@@ -226,6 +225,20 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it.each(['hane_buyuklugu', 'hedef'])('requires the remaining qualification field %s', async (field) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ [field]: '' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rejects a submission without a surname', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
@@ -266,7 +279,7 @@ describe('lead conversion endpoint', () => {
     expect(failureStore.put.mock.calls[0]?.[2]).toEqual({ expirationTtl: 2592000 });
     expect(Object.keys(stored).sort()).toEqual(['partnerPayload', 'processing_consent', 'qualificationAnswers', 'timestamp']);
     expect(stored.partnerPayload).toEqual(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string));
-    expect(stored.qualificationAnswers).toEqual({ gelir_araligi: '₺30.001–₺50.000', hane_buyuklugu: '2 kişi', hedef: 'Harcamaları düzenlemek' });
+    expect(stored.qualificationAnswers).toEqual({ hane_buyuklugu: '2 kişi', hedef: 'Harcamaları düzenlemek' });
     expect(stored.processing_consent).toBe(true);
     expect(stored.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string)).toMatchObject({ downstreamStatus: 500, downstreamCode: 'PARTNER_ERROR', downstreamMessage: 'INVALID_PHONE', click_id: 'recover-me', recoveryKey: key });
@@ -439,7 +452,7 @@ describe('lead conversion endpoint', () => {
       message: {
         EMAIL: 'hidden@example.com', phone: '+905301112233', name: 'Ayşe', firstName: 'Ayşe', lastName: 'Yılmaz',
         ad: 'Ayşe', soyad: 'Yılmaz', eposta: 'ayse@example.com', telefon: '+905301112233',
-        gelir_araligi: 'private', hane_buyuklugu: 'private', hedef: 'private', processing_consent: 'on', website: 'private',
+        hane_buyuklugu: 'private', hedef: 'private', processing_consent: 'on', website: 'private',
         nested: [{ Email: 'hidden@example.com', detail: 'AYŞE YILMAZ ayse@example.com +90 530 111 22 33' }],
         serialized: JSON.stringify({ firstname: 'Ayşe', reason: 'INVALID' }),
         reason: 'INVALID',
