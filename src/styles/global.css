@@ -61,12 +61,16 @@ body {
 }
 
 .cookie-consent-pending body {
-  padding-bottom: var(--cookie-banner-height);
+  padding-top: var(--cookie-banner-height);
+}
+
+.cookie-consent-pending body > header {
+  top: var(--cookie-banner-height);
 }
 
 #cookie-banner {
   height: var(--cookie-banner-height);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 a {
