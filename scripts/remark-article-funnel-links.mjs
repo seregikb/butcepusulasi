@@ -48,6 +48,29 @@ function sentenceParagraph({ before, anchor, after }, enabled) {
   };
 }
 
+function injectFirstParagraphLink(paragraph, { insertAfter, before, anchor, after }, enabled, slug) {
+  const textIndex = paragraph.children.findIndex(
+    (node) => node.type === 'text' && node.value.includes(insertAfter),
+  );
+  if (textIndex === -1) throw new Error(`First-paragraph insertion point not found for ${slug}: ${insertAfter}`);
+
+  const original = paragraph.children[textIndex].value;
+  const splitAt = original.indexOf(insertAfter) + insertAfter.length;
+  const replacement = [
+    { type: 'text', value: `${original.slice(0, splitAt)}${before}` },
+    enabled
+      ? {
+          type: 'link',
+          url: '/butce-plani/',
+          data: { hProperties: { className: ['article-funnel-link'] } },
+          children: [{ type: 'text', value: anchor }],
+        }
+      : { type: 'text', value: anchor },
+    { type: 'text', value: `${after}${original.slice(splitAt)}` },
+  ];
+  paragraph.children.splice(textIndex, 1, ...replacement);
+}
+
 function tableOfContents(headings, enabled) {
   const items = headings.map(({ id, title }) => `<li><a href="#${id}">${escapeHtml(title)}</a></li>`);
   if (enabled) items.push('<li><a href="/butce-plani/">Kişisel bütçe planı</a></li>');
@@ -89,6 +112,7 @@ export default function remarkArticleFunnelLinks({ enabled, links }) {
     const tocHeadings = headings.filter(({ title }) => !['Sık Sorulan Sorular', 'İlgili yazılar'].includes(title));
     const firstParagraphIndex = tree.children.findIndex((node) => node.type === 'paragraph');
     if (firstParagraphIndex === -1) throw new Error(`First body paragraph not found for ${slug}`);
+    injectFirstParagraphLink(tree.children[firstParagraphIndex], article.first, enabled, slug);
 
     let tocInsertAt = firstParagraphIndex + 1;
     if (enabled) {

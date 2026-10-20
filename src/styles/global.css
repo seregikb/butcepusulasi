@@ -60,17 +60,8 @@ body {
   background: var(--color-paper);
 }
 
-.cookie-consent-pending body {
-  padding-top: var(--cookie-banner-height);
-}
-
-.cookie-consent-pending body > header {
-  top: var(--cookie-banner-height);
-}
-
 #cookie-banner {
   height: var(--cookie-banner-height);
-  padding-top: env(safe-area-inset-top, 0px);
 }
 
 a {

@@ -1,4 +1,4 @@
-<div id="cookie-banner" class="pointer-events-none invisible fixed inset-x-0 top-0 z-[80] flex border-b border-rule" role="dialog" aria-label="Çerez tercihleri" aria-live="polite" aria-hidden="true">
+<div id="cookie-banner" class="pointer-events-none invisible absolute z-[80] flex border-b border-rule bg-paper" role="dialog" aria-label="Çerez tercihleri" aria-live="polite" aria-hidden="true">
   <div class="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-3 pt-1">
     <p class="pointer-events-auto m-0 bg-paper text-xs leading-4 text-muted">
       Analiz ve reklam çerezleri için izninizi istiyoruz.
@@ -15,10 +15,60 @@
   (() => {
     const key = 'butce-pusulasi-cookie-consent';
     const banner = document.querySelector('#cookie-banner');
+    const header = document.querySelector('body > header');
+    const hero = document.querySelector('[data-consent-hero] .cover-art');
     const choice = localStorage.getItem(key);
+    let heroPosition;
+    let frame;
+
+    const measureHero = () => {
+      if (!(banner instanceof HTMLElement) || !(hero instanceof HTMLElement)) {
+        heroPosition = undefined;
+        return;
+      }
+      const rect = hero.getBoundingClientRect();
+      heroPosition = {
+        top: window.scrollY + rect.top + ((rect.height - banner.offsetHeight) / 2),
+        left: window.scrollX + rect.left,
+        width: rect.width,
+      };
+    };
+
+    const positionBanner = () => {
+      frame = undefined;
+      if (!(banner instanceof HTMLElement)) return;
+      const menuBottom = header instanceof HTMLElement ? header.getBoundingClientRect().bottom : 0;
+      const docked = !heroPosition || window.scrollY + menuBottom >= heroPosition.top;
+      banner.dataset.position = docked ? 'docked' : 'hero';
+      banner.style.position = docked ? 'fixed' : 'absolute';
+      banner.style.top = `${docked ? menuBottom : heroPosition.top}px`;
+      banner.style.left = `${docked ? 0 : heroPosition.left}px`;
+      banner.style.width = docked ? '100%' : `${heroPosition.width}px`;
+    };
+
+    const schedulePosition = () => {
+      if (frame !== undefined) return;
+      frame = requestAnimationFrame(positionBanner);
+    };
+
+    const refreshPosition = () => {
+      measureHero();
+      positionBanner();
+    };
+
+    const stopPositioning = () => {
+      window.removeEventListener('scroll', schedulePosition);
+      window.removeEventListener('resize', refreshPosition);
+      if (frame !== undefined) cancelAnimationFrame(frame);
+    };
+
     if (!choice) {
+      refreshPosition();
       banner?.classList.remove('invisible');
       banner?.setAttribute('aria-hidden', 'false');
+      window.addEventListener('scroll', schedulePosition, { passive: true });
+      window.addEventListener('resize', refreshPosition);
+      document.fonts?.ready.then(refreshPosition);
     } else {
       banner?.classList.add('hidden');
     }
@@ -27,9 +77,9 @@
         const value = button.getAttribute('data-cookie-choice');
         if (!value) return;
         localStorage.setItem(key, value);
+        stopPositioning();
         banner?.classList.add('hidden');
         banner?.setAttribute('aria-hidden', 'true');
-        document.documentElement.classList.remove('cookie-consent-pending');
         window.dispatchEvent(new CustomEvent('cookie-consent', { detail: value }));
       });
     });

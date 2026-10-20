@@ -53,15 +53,6 @@ const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <script is:inline>
-      try {
-        if (!localStorage.getItem('butce-pusulasi-cookie-consent')) {
-          document.documentElement.classList.add('cookie-consent-pending');
-        }
-      } catch {
-        document.documentElement.classList.add('cookie-consent-pending');
-      }
-    </script>
     {robotsContent && <meta name="robots" content={robotsContent} />}
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />

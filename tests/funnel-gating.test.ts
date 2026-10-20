@@ -110,7 +110,7 @@ describe('lead funnel route gating', () => {
     expect(disabled.routeHtml['butce-plani']).not.toContain("campaignParams.get('utm_content')");
   });
 
-  it('indexes enabled routes and exposes four funnel entries in every article', () => {
+  it('indexes enabled routes and exposes five funnel entries in every article', () => {
     for (const route of funnelRoutes) {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
@@ -149,19 +149,23 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="transfer_consent"');
     expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
     expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
-    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 4);
+    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 5);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
       new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),
     );
+    const firstAnchorTexts: string[] = [];
     for (const html of Object.values(enabled.articleHtml)) {
       const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
       const prose = html.match(/<div class="prose[^>]*>([\s\S]*?)<\/div>\s*<\/article>/)?.[1] || '';
+      const proseLinkIndexes = [...prose.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const firstParagraphIndex = prose.search(/<p(?:\s|>)/);
+      const firstParagraph = prose.match(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/)?.[1] || '';
+      const firstAnchor = firstParagraph.match(/<a[^>]*href="\/butce-plani\/"[^>]*>(.*?)<\/a>/)?.[1] || '';
       const calloutIndex = prose.indexOf('<aside class="article-funnel-callout">');
       const tocIndex = prose.indexOf('<details class="article-toc">');
       const firstHeadingIndex = prose.indexOf('<h2');
-      expect(linkIndexes).toHaveLength(4);
+      expect(linkIndexes).toHaveLength(5);
       expect(faqIndex).toBeGreaterThan(-1);
       expect(html.match(/class="article-funnel-callout"/g)).toHaveLength(1);
       expect(html).toContain('class="article-funnel-callout__label">ŞABLON</p>');
@@ -169,13 +173,20 @@ describe('lead funnel route gating', () => {
       expect(prose).toContain('<summary class="article-toc__title">İçindekiler</summary>');
       expect(prose).not.toContain('<details class="article-toc" open');
       expect(firstParagraphIndex).toBeGreaterThanOrEqual(0);
+      expect(firstAnchor).not.toBe('');
+      expect(firstAnchor.split(/\s+/).length).toBeGreaterThanOrEqual(4);
+      expect(firstAnchor.split(/\s+/).length).toBeLessThanOrEqual(9);
+      firstAnchorTexts.push(firstAnchor.toLocaleLowerCase('tr'));
+      expect(proseLinkIndexes[0]).toBeGreaterThan(firstParagraphIndex);
+      expect(proseLinkIndexes[0]).toBeLessThan(calloutIndex);
       expect(calloutIndex).toBeGreaterThan(firstParagraphIndex);
       expect(tocIndex).toBeGreaterThan(calloutIndex);
       expect(firstHeadingIndex).toBeGreaterThan(tocIndex);
       expect(prose.slice(0, calloutIndex).match(/<p(?:\s|>)/g)).toHaveLength(1);
-      expect(linkIndexes.slice(0, 3).every((index) => index < faqIndex)).toBe(true);
-      expect(linkIndexes[3]).toBeGreaterThan(faqIndex);
+      expect(linkIndexes.slice(0, 4).every((index) => index < faqIndex)).toBe(true);
+      expect(linkIndexes[4]).toBeGreaterThan(faqIndex);
     }
+    expect(new Set(firstAnchorTexts).size).toBe(articleSlugs.length);
     expect(enabled.anchorPages['aydinlatma-metni']).toEqual(['butce-plani/index.html']);
     expect(enabled.anchorPages.tesekkurler).toEqual([]);
   });

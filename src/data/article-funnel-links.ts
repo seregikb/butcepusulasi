@@ -5,6 +5,9 @@ interface LinkSentence {
 }
 
 interface ArticleFunnelLinks {
+  first: LinkSentence & {
+    insertAfter: string;
+  };
   midAfterHeading: string;
   callout: {
     description: string;
@@ -16,6 +19,12 @@ interface ArticleFunnelLinks {
 
 export const ARTICLE_FUNNEL_LINKS = {
   '50-30-20-kurali': {
+    first: {
+      insertAfter: '50/30/20 kuralı,',
+      before: ' ',
+      anchor: 'kişisel gelir dağılımı bütçe planı',
+      after: ' içinde',
+    },
     midAfterHeading: 'Maaşınızı adım adım nasıl bölersiniz?',
     callout: {
       description: 'Gelir ve gider aralıklarınıza göre bu dağılımı kendi bütçeniz üzerinde görebilirsiniz.',
@@ -33,6 +42,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'acil-durum-fonu': {
+    first: {
+      insertAfter: 'Acil durum fonu,',
+      before: ' ',
+      anchor: 'acil giderleri içeren kişisel bütçe planı',
+      after: ' içinde',
+    },
     midAfterHeading: 'Adım 1: Aylık zorunlu gideri hesaplayın',
     callout: {
       description: 'Aylık giderlerinizle fon hedefinizi aynı bütçe görünümünde değerlendirebilirsiniz.',
@@ -50,6 +65,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'basit-butce-sistemi': {
+    first: {
+      insertAfter: 'Bütçe yapmak için',
+      before: ' ',
+      anchor: 'üç adımlı sade kişisel bütçe planı',
+      after: ' kullanılabilir;',
+    },
     midAfterHeading: 'Adım 1: Net geliri ve zorunlu giderleri yazın',
     callout: {
       description: 'Gelirinizin zorunlu gider, esnek harcama ve hedefler arasındaki yerini görebilirsiniz.',
@@ -67,6 +88,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'cocuklara-para-egitimi': {
+    first: {
+      insertAfter: 'yalnızca anlatılanlardan değil,',
+      before: ' ',
+      anchor: 'aile bütçesini gösteren sade plan',
+      after: ' üzerinden ve',
+    },
     midAfterHeading: '10–12 yaş: Basit bütçe ve fiyat karşılaştırması',
     callout: {
       description: 'Çocuklarla paylaşacağınız örnekleri hazırlarken hane bütçenizin sade bir özetini kullanabilirsiniz.',
@@ -84,6 +111,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'finansal-hedef-belirleme': {
+    first: {
+      insertAfter: '“Para biriktirmek istiyorum”',
+      before: ' ',
+      anchor: 'hedeflere ayrılmış aylık bütçe özeti',
+      after: ' olmadan',
+    },
     midAfterHeading: 'M: Ölçülebilir bir tutar belirleyin',
     callout: {
       description: 'Hedefler için ayırabileceğiniz tutarı mevcut gelir ve gider dengeniz içinde görebilirsiniz.',
@@ -101,6 +134,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'finansal-okuryazarlik-nedir': {
+    first: {
+      insertAfter: 'Finansal okuryazarlık,',
+      before: ' ',
+      anchor: 'temel kararları içeren kişisel bütçe planı',
+      after: ' gibi pratiklerle,',
+    },
     midAfterHeading: 'Neden günlük yaşam için önemlidir?',
     callout: {
       description: 'Temel bütçe kavramlarını kendi aylık nakit akışınız üzerinde değerlendirebilirsiniz.',
@@ -118,6 +157,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'gelir-gider-tablosu-sablonu': {
+    first: {
+      insertAfter: 'Gelir gider tablosu,',
+      before: ' ',
+      anchor: 'aylık rakamlara dayalı bütçe dağılımı',
+      after: ' için',
+    },
     midAfterHeading: 'Adım 1: Net gelirleri yazın',
     callout: {
       description: 'Tablodaki aylık rakamları kişisel bir bütçe dağılımına dönüştürebilirsiniz.',
@@ -135,6 +180,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'gizli-abonelikler': {
+    first: {
+      insertAfter: 'Birçok dijital hizmet',
+      before: ', ',
+      anchor: 'abonelikleri izleyen kişisel bütçe görünümü',
+      after: ' kullanılmadığında,',
+    },
     midAfterHeading: 'Adım 1: Banka ve kart hareketlerini tarayın',
     callout: {
       description: 'Düzenli ödemelerin bütçenizde kapladığı alanı diğer giderlerle birlikte görebilirsiniz.',
@@ -152,6 +203,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'kredi-karti-ekstresi-okuma': {
+    first: {
+      insertAfter: 'Kredi kartı ekstresi,',
+      before: ' ',
+      anchor: 'ekstre odaklı kişisel bütçe özeti',
+      after: ' için',
+    },
     midAfterHeading: 'İşlem listesini satır satır kontrol edin',
     callout: {
       description: 'Ekstredeki kalemleri aylık gelir ve gider planınızla birlikte değerlendirebilirsiniz.',
@@ -169,6 +226,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'maas-gelmeden-biten-para': {
+    first: {
+      insertAfter: 'Maaşın son haftaya yetişmemesi',
+      before: ' ',
+      anchor: 'maaş döngüsüne göre kişisel bütçe planı',
+      after: ' incelendiğinde',
+    },
     midAfterHeading: 'Harcama 1: Otomatik yenilenen abonelikler',
     callout: {
       description: 'Fark edilmeden tekrarlanan giderlerin aylık bütçenizdeki toplam etkisini görebilirsiniz.',
@@ -186,6 +249,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'market-alisverisi-tasarruf': {
+    first: {
+      insertAfter: 'Market harcaması',
+      before: ' ',
+      anchor: 'market payını gösteren hane bütçesi',
+      after: ' içinde',
+    },
     midAfterHeading: 'Yöntem 1: Evdeki stokla başlayın',
     callout: {
       description: 'Market için ayıracağınız sınırı hane geliriniz ve diğer giderlerinizle birlikte görebilirsiniz.',
@@ -203,6 +272,12 @@ export const ARTICLE_FUNNEL_LINKS = {
     },
   },
   'zarf-yontemi-butceleme': {
+    first: {
+      insertAfter: 'Zarf yöntemi,',
+      before: ' ',
+      anchor: 'zarf kategorili kişisel bütçe dağılımı',
+      after: ' kapsamında',
+    },
     midAfterHeading: 'Adım 1: Gerçek harcamaları belirleyin',
     callout: {
       description: 'Zarf tutarlarını belirlerken kullanılabilir gelirinizi tek bir dağılımda değerlendirebilirsiniz.',
