@@ -142,7 +142,7 @@ describe('lead funnel route gating', () => {
     expect(submitTag).toContain('type="submit"');
     expect(submitTag).not.toMatch(/\sdisabled(?:\s|=|>)/);
     expect(enabled.routeHtml['butce-plani']).toContain('id="lead-next"');
-    expect(enabled.routeHtml['butce-plani']).toContain('Gelir tutarınızı sormuyoruz; kendi rakamlarınızı yalnızca indireceğiniz tabloya kendiniz yazarsınız.');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('sormuyoruz');
     expect(enabled.routeHtml['butce-plani']).toContain('name="creo" value=""');
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="iletisim_turu"');
     expect(enabled.routeHtml['butce-plani'].match(/<input\b[^>]*type="checkbox"[^>]*>/g)).toHaveLength(1);
