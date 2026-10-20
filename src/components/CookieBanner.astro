@@ -1,12 +1,12 @@
-<div id="cookie-banner" class="invisible fixed inset-x-0 bottom-0 z-[80] flex h-24 border-t border-rule bg-paper px-4 py-3 max-[369px]:h-[132px] md:h-[68px]" role="dialog" aria-label="Çerez tercihleri" aria-live="polite" aria-hidden="true">
-  <div class="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 max-[369px]:grid-cols-1 max-[369px]:gap-2">
-    <p class="m-0 text-xs leading-5 text-muted md:text-sm">
-      Analiz ve reklam araçları için izninizi soruyoruz.
+<div id="cookie-banner" class="pointer-events-none invisible fixed inset-x-0 bottom-0 z-[80] flex border-t border-rule" role="dialog" aria-label="Çerez tercihleri" aria-live="polite" aria-hidden="true">
+  <div class="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-3 pt-1">
+    <p class="pointer-events-auto m-0 bg-paper text-xs leading-4 text-muted">
+      Analiz ve reklam çerezleri için izninizi istiyoruz.
       <a class="font-semibold text-accent underline" href="/cerez-politikasi/">Çerez Politikası</a>
     </p>
-    <div class="grid grid-cols-2 gap-2">
-      <button data-cookie-choice="rejected" type="button" class="min-h-10 border border-accent bg-paper px-3 py-2 text-sm font-bold text-accent">Reddet</button>
-      <button data-cookie-choice="accepted" type="button" class="min-h-10 border border-accent bg-paper px-3 py-2 text-sm font-bold text-accent">Kabul Et</button>
+    <div class="pointer-events-auto grid grid-cols-2 gap-1">
+      <button data-cookie-choice="rejected" type="button" class="h-11 border border-accent bg-paper px-0 text-xs font-bold text-accent">Reddet</button>
+      <button data-cookie-choice="accepted" type="button" class="h-11 border border-accent bg-paper px-0 text-xs font-bold text-accent">Kabul Et</button>
     </div>
   </div>
 </div>
@@ -29,6 +29,7 @@
         localStorage.setItem(key, value);
         banner?.classList.add('hidden');
         banner?.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('cookie-consent-pending');
         window.dispatchEvent(new CustomEvent('cookie-consent', { detail: value }));
       });
     });

@@ -37,6 +37,7 @@
 }
 
 :root {
+  --cookie-banner-height: 72px;
   color-scheme: light;
   font-family: var(--font-sans);
   color: var(--color-ink);
@@ -57,6 +58,15 @@ body {
   min-width: 320px;
   margin: 0;
   background: var(--color-paper);
+}
+
+.cookie-consent-pending body {
+  padding-bottom: var(--cookie-banner-height);
+}
+
+#cookie-banner {
+  height: var(--cookie-banner-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 a {
