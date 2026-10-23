@@ -32,7 +32,7 @@ export async function onRequestPost({ request, env, waitUntil }: PagesContext): 
   }
   const event = body && typeof body === 'object' ? (body as Record<string, unknown>).event : undefined;
   if (!isFunnelEvent(event)) return empty(400);
-  if (!env.LEAD_FAILURES) return empty(503);
+  if (!env.LEAD_FAILURES) return empty(404);
 
   waitUntil(increment(env.LEAD_FAILURES, funnelKey(utcDate(), event)));
   return empty(204);

@@ -58,6 +58,16 @@ describe('cookieless funnel counter endpoint', () => {
     expect(Number.isInteger(Number(store.values.get(key)))).toBe(true);
     expect(store.put).toHaveBeenLastCalledWith(key, '2', { expirationTtl: 7_776_000 });
   });
+
+  it('returns an empty 404 when the KV binding is unavailable', async () => {
+    const response = await onRequestPost({
+      request: eventRequest('form_view'),
+      env: { PUBLIC_LEAD_FUNNEL_ENABLED: 'true' },
+      waitUntil: vi.fn(),
+    });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('');
+  });
 });
 
 describe('protected funnel report', () => {
@@ -86,6 +96,35 @@ describe('protected funnel report', () => {
     const response = await onRequestGet({
       request: reportRequest(query),
       env: { FUNNEL_REPORT_TOKEN: token, LEAD_FAILURES: seededStore() },
+    });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('');
+  });
+
+  it('returns an empty 404 when the token variable is unavailable', async () => {
+    const response = await onRequestGet({
+      request: reportRequest('?k=diagnostic-token'),
+      env: { LEAD_FAILURES: seededStore() },
+    });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('');
+  });
+
+  it('returns an empty 404 when the KV binding is unavailable', async () => {
+    const response = await onRequestGet({
+      request: reportRequest(`?k=${token}`),
+      env: { FUNNEL_REPORT_TOKEN: token },
+    });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('');
+  });
+
+  it('returns an empty 404 when the KV binding cannot be read', async () => {
+    const store = kv();
+    store.get.mockRejectedValue(new Error('KV unavailable'));
+    const response = await onRequestGet({
+      request: reportRequest(`?k=${token}`),
+      env: { FUNNEL_REPORT_TOKEN: token, LEAD_FAILURES: store },
     });
     expect(response.status).toBe(404);
     expect(await response.text()).toBe('');

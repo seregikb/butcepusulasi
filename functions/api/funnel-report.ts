@@ -93,17 +93,22 @@ export async function onRequestGet({ request, env }: PagesContext): Promise<Resp
   const suppliedToken = url.searchParams.get('k') || '';
   const expectedToken = env.FUNNEL_REPORT_TOKEN?.trim() || '';
   if (!await tokenMatches(suppliedToken, expectedToken)) return notFound();
-  if (!env.LEAD_FAILURES) return new Response(null, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  if (!env.LEAD_FAILURES) return notFound();
 
   const days = parseDays(url.searchParams.get('days'));
-  const rows: DailyRow[] = await Promise.all(dateRange(days).map(async (date) => {
-    const values = await Promise.all(FUNNEL_EVENTS.map((event) => env.LEAD_FAILURES!.get(funnelKey(date, event))));
-    const counts = Object.fromEntries(FUNNEL_EVENTS.map((event, index) => {
-      const count = Number.parseInt(values[index] || '0', 10);
-      return [event, Number.isSafeInteger(count) && count >= 0 ? count : 0];
-    })) as Record<FunnelEvent, number>;
-    return { date, counts };
-  }));
+  let rows: DailyRow[];
+  try {
+    rows = await Promise.all(dateRange(days).map(async (date) => {
+      const values = await Promise.all(FUNNEL_EVENTS.map((event) => env.LEAD_FAILURES!.get(funnelKey(date, event))));
+      const counts = Object.fromEntries(FUNNEL_EVENTS.map((event, index) => {
+        const count = Number.parseInt(values[index] || '0', 10);
+        return [event, Number.isSafeInteger(count) && count >= 0 ? count : 0];
+      })) as Record<FunnelEvent, number>;
+      return { date, counts };
+    }));
+  } catch {
+    return notFound();
+  }
   const totals = Object.fromEntries(FUNNEL_EVENTS.map((event) => [
     event,
     rows.reduce((sum, row) => sum + row.counts[event], 0),
