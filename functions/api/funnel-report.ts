@@ -70,7 +70,8 @@ function renderChart(totals: Record<FunnelEvent, number>): string {
     const marker = index > 0 && event === largestDrop.event && largestDrop.drop > 0 ? ' · En büyük düşüş' : '';
     return `<g><text x="8" y="${y + 17}" class="event">${event}</text><rect x="150" y="${y}" width="330" height="24" rx="2" class="track"/><rect x="150" y="${y}" width="${width}" height="24" rx="2" class="bar"/><text x="150" y="${y + 43}" class="value">${count} · ${stagePercentage}${marker}</text></g>`;
   }).join('');
-  return `<section id="funnel-chart"><h1>Funnel özeti</h1><svg role="img" aria-label="${FUNNEL_EVENTS.length} aşamalı funnel grafiği" viewBox="0 0 500 380">${rows}</svg></section>`;
+  const chartHeight = 32 + (FUNNEL_EVENTS.length * 58);
+  return `<section id="funnel-chart"><h1>Funnel özeti</h1><svg role="img" aria-label="${FUNNEL_EVENTS.length} aşamalı funnel grafiği" viewBox="0 0 500 ${chartHeight}">${rows}</svg></section>`;
 }
 
 function renderTable(rows: DailyRow[], totals: Record<FunnelEvent, number>): string {

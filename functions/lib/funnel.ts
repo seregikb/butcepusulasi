@@ -5,6 +5,8 @@ export const FUNNEL_EVENTS = [
   'step2_focus',
   'consent_tick',
   'submit_attempt',
+  'callout_answer',
+  'callout_submit',
 ] as const;
 
 export type FunnelEvent = typeof FUNNEL_EVENTS[number];

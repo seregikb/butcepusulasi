@@ -8,6 +8,7 @@ const root = process.cwd();
 const dist = join(root, 'dist');
 const astroCli = join(root, 'node_modules/astro/astro.js');
 const funnelRoutes = ['aydinlatma-metni', 'butce-plani', 'tesekkurler'];
+const interactiveCalloutSlugs = ['maas-gelmeden-biten-para', 'gelir-gider-tablosu-sablonu'];
 const publicRoutes = ['gizlilik-politikasi', 'iletisim'];
 const articleSlugs = [
   '50-30-20-kurali',
@@ -107,10 +108,12 @@ describe('lead funnel route gating', () => {
       expect(disabled.routeHtml[route]).not.toContain('2084914');
       expect(disabled.routeHtml[route]).not.toContain('G-NKNZXPZ73N');
     }
+    expect(disabled.routeHtml['butce-plani']).not.toContain('cookie-banner');
+    expect(disabled.articleHtml['basit-butce-sistemi']).toContain('id="cookie-banner"');
     expect(disabled.routeHtml['butce-plani']).not.toContain("campaignParams.get('utm_content')");
   });
 
-  it('indexes enabled routes and exposes five funnel entries in every article', () => {
+  it('indexes enabled routes and exposes the configured funnel entries', () => {
     for (const route of funnelRoutes) {
       expect(enabled.routeHtml[route]).toContain('<meta name="robots" content="index, follow">');
       expect(enabled.sitemap).toContain(`/${route}/`);
@@ -121,16 +124,18 @@ describe('lead funnel route gating', () => {
       expect(enabled.sitemap).toContain(`/${route}/`);
     }
     expect(enabled.articleHtml['basit-butce-sistemi']).toContain('data-event="page_view"');
-    expect(enabled.routeHtml['butce-plani']).toContain('data-event="step_1"');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('cookie-banner');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('2084914');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('G-NKNZXPZ73N');
     expect(enabled.routeHtml.tesekkurler).toContain('data-event="lead"');
-    for (const route of ['butce-plani', 'tesekkurler']) {
-      expect(enabled.routeHtml[route]).toContain('2084914');
-      expect(enabled.routeHtml[route]).toContain('G-NKNZXPZ73N');
-    }
+    expect(enabled.routeHtml.tesekkurler).toContain('2084914');
+    expect(enabled.routeHtml.tesekkurler).toContain('G-NKNZXPZ73N');
+    expect(enabled.routeHtml.tesekkurler).toContain('id="cookie-banner"');
+    expect(enabled.articleHtml['basit-butce-sistemi']).toContain('id="cookie-banner"');
     expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('2084914');
     expect(enabled.routeHtml['aydinlatma-metni']).not.toContain('G-NKNZXPZ73N');
-    expect(enabled.routeHtml['butce-plani']).toContain('name="eposta" type="email" autocomplete="email" required');
-    expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" autocomplete="tel" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="eposta" type="email" inputmode="email" autocomplete="email" required');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="telefon" type="tel" inputmode="tel" autocomplete="tel" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="ad" type="text" autocomplete="given-name" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="soyad" type="text" autocomplete="family-name" required');
     expect(enabled.routeHtml['butce-plani']).toContain('name="hane_buyuklugu"');
@@ -152,12 +157,14 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).toContain('window.safeStorage =');
     expect(enabled.routeHtml['butce-plani']).not.toMatch(/(?<!safeStorage\.)sessionStorage\.(?:getItem|setItem)/);
     expect(enabled.routeHtml['butce-plani']).not.toMatch(/(?<!safeStorage\.)localStorage\.(?:getItem|setItem)/);
-    expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 5);
+    expect(enabled.routeHtml['butce-plani']).toContain('<form id="lead-form" name="butce-plani"');
+    expect(enabled.routeHtml['butce-plani']).toContain('value="+90 "');
+    expect(enabled.anchorPages['butce-plani']).toHaveLength((articleSlugs.length * 5) - interactiveCalloutSlugs.length);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
       new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),
     );
     const firstAnchorTexts: string[] = [];
-    for (const html of Object.values(enabled.articleHtml)) {
+    for (const [slug, html] of Object.entries(enabled.articleHtml)) {
       const linkIndexes = [...html.matchAll(/<a\b[^>]*href="\/butce-plani\/"/g)].map((match) => match.index);
       const faqIndex = html.indexOf('>Sık Sorulan Sorular</h2>');
       const prose = html.match(/<div class="prose[^>]*>([\s\S]*?)<\/div>\s*<\/article>/)?.[1] || '';
@@ -168,7 +175,7 @@ describe('lead funnel route gating', () => {
       const calloutIndex = prose.indexOf('<aside class="article-funnel-callout">');
       const tocIndex = prose.indexOf('<details class="article-toc">');
       const firstHeadingIndex = prose.indexOf('<h2');
-      expect(linkIndexes).toHaveLength(5);
+      expect(linkIndexes).toHaveLength(interactiveCalloutSlugs.includes(slug) ? 4 : 5);
       expect(faqIndex).toBeGreaterThan(-1);
       expect(html.match(/class="article-funnel-callout"/g)).toHaveLength(1);
       expect(html).toContain('class="article-funnel-callout__label">ŞABLON</p>');
@@ -186,8 +193,15 @@ describe('lead funnel route gating', () => {
       expect(tocIndex).toBeGreaterThan(calloutIndex);
       expect(firstHeadingIndex).toBeGreaterThan(tocIndex);
       expect(prose.slice(0, calloutIndex).match(/<p(?:\s|>)/g)).toHaveLength(1);
-      expect(linkIndexes.slice(0, 4).every((index) => index < faqIndex)).toBe(true);
-      expect(linkIndexes[4]).toBeGreaterThan(faqIndex);
+      expect(linkIndexes.slice(0, -1).every((index) => index < faqIndex)).toBe(true);
+      expect(linkIndexes.at(-1)).toBeGreaterThan(faqIndex);
+      if (interactiveCalloutSlugs.includes(slug)) {
+        expect(html).toContain('<form class="article-funnel-callout__form" method="get" action="/butce-plani/" data-article-funnel-form="">');
+        expect(html).toContain('name="hane_buyuklugu"');
+        expect(html).toContain('name="hedef"');
+      } else {
+        expect(html).not.toContain('data-article-funnel-form');
+      }
     }
     expect(new Set(firstAnchorTexts).size).toBe(articleSlugs.length);
     expect(enabled.anchorPages['aydinlatma-metni']).toEqual(['butce-plani/index.html']);

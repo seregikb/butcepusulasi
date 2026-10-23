@@ -37,7 +37,7 @@
 }
 
 :root {
-  --cookie-banner-height: 72px;
+  --consent-height: 72px;
   color-scheme: light;
   font-family: var(--font-sans);
   color: var(--color-ink);
@@ -58,10 +58,6 @@ body {
   min-width: 320px;
   margin: 0;
   background: var(--color-paper);
-}
-
-#cookie-banner {
-  height: var(--cookie-banner-height);
 }
 
 a {
@@ -161,6 +157,60 @@ a {
 
 .article-funnel-callout .article-funnel-callout__link {
   margin-bottom: 0;
+}
+
+.article-funnel-callout__form {
+  display: grid;
+  gap: 1em;
+}
+
+.article-funnel-callout__form fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.article-funnel-callout__form legend {
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
+
+.article-funnel-callout__options {
+  display: grid;
+  gap: 0.5em;
+}
+
+.article-funnel-callout__option {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--color-rule);
+  background: white;
+  padding: 0.5rem 1rem;
+}
+
+.article-funnel-callout__submit {
+  width: fit-content;
+  min-height: 3rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--color-accent);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.article-funnel-callout__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 @media (min-width: 768px) {

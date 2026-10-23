@@ -7,6 +7,7 @@ pubDate: 2026-08-13
 readingTime: 8
 heroImage: "/images/articles/gelir-gider-tablosu-sablonu.webp"
 heroImageAlt: "Evde bilgisayar ve hesap makinesiyle gelir gider tablosu hazırlayan kadın"
+interactiveFunnelCallout: true
 faq:
   - q: "Şablonu kullanmak için hangi program gerekir?"
     a: "Dosya XLSX biçimindedir ve bu biçimi destekleyen güncel hesap tablosu programlarında açılabilir. Formüllerin doğru çalıştığını ilk açılışta kontrol edin."

@@ -7,6 +7,7 @@ pubDate: 2026-08-21
 readingTime: 7
 heroImage: "/images/articles/maas-gelmeden-biten-para.webp"
 heroImageAlt: "Günlük harcamalarını düşünürken cüzdanını kontrol eden genç adam"
+interactiveFunnelCallout: true
 faq:
   - q: "Küçük harcamaları tamamen bırakmak gerekir mi?"
     a: "Hayır. Önce toplam etkilerini görün, sizin için düşük değer taşıyanları azaltın ve gerçekten keyif aldığınız harcamalara bilinçli pay bırakın."

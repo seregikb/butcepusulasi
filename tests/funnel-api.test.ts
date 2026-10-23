@@ -100,7 +100,7 @@ describe('protected funnel report', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
     expect(html).toContain('<section id="funnel-chart">');
-    expect(html).toContain('<svg role="img"');
+    expect(html).toContain(`<svg role="img" aria-label="${FUNNEL_EVENTS.length} aşamalı funnel grafiği"`);
     expect(html).toContain('En büyük düşüş');
     expect(html).toContain('<tfoot><tr><th scope="row">Toplam</th>');
     expect(html.match(/<tbody><tr/g)).toHaveLength(1);

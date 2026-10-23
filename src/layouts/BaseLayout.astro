@@ -5,6 +5,7 @@ import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import SafeStorage from '@/components/SafeStorage.astro';
 import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
+import { LEAD_FORM_ROUTE } from '@/data/gated-routes';
 import { SITE } from '@/lib/site';
 import '@/styles/global.css';
 
@@ -48,6 +49,7 @@ const organization = {
 };
 const schemas = [organization, ...(Array.isArray(schema) ? schema : [schema])];
 const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+const renderConsentBanner = Astro.url.pathname !== LEAD_FORM_ROUTE;
 ---
 
 <!doctype html>
@@ -84,7 +86,7 @@ const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
       <slot />
     </main>
     <Footer />
-    <CookieBanner />
+    {renderConsentBanner && <CookieBanner />}
     <Analytics />
     {funnelEnabled && (
       <script is:inline>

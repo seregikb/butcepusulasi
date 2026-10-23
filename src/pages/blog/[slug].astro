@@ -86,4 +86,33 @@ const faqSchema = post.data.faq ? {
       </div>
     </section>
   )}
+  {funnelEnabled && post.data.interactiveFunnelCallout && (
+    <script is:inline>
+    document.querySelectorAll('[data-article-funnel-form]').forEach((form) => {
+      if (!(form instanceof HTMLFormElement)) return;
+      const button = form.querySelector('button[type="submit"]');
+      if (!(button instanceof HTMLButtonElement)) return;
+      button.disabled = true;
+      const sent = new Set();
+      const record = (event) => {
+        if (sent.has(event)) return;
+        sent.add(event);
+        fetch('/api/funnel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event }),
+          keepalive: true,
+        }).catch(() => undefined);
+      };
+      const complete = () => ['hane_buyuklugu', 'hedef'].every((name) => (
+        form.querySelector(`input[name="${name}"]:checked`)
+      ));
+      form.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', () => {
+        record('callout_answer');
+        button.disabled = !complete();
+      }));
+      form.addEventListener('submit', () => record('callout_submit'));
+    });
+    </script>
+  )}
 </BaseLayout>

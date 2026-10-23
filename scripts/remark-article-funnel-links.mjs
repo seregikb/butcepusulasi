@@ -88,7 +88,21 @@ function callout({ description, anchor }) {
   };
 }
 
-export default function remarkArticleFunnelLinks({ enabled, links }) {
+function radioGroup(name, legend, options) {
+  const choices = options.map((value) => (
+    `<label class="article-funnel-callout__option"><input type="radio" name="${name}" value="${escapeHtml(value)}" required> ${escapeHtml(value)}</label>`
+  )).join('');
+  return `<fieldset><legend>${legend}</legend><div class="article-funnel-callout__options">${choices}</div></fieldset>`;
+}
+
+function interactiveCallout({ description, anchor }, householdOptions, goalOptions) {
+  return {
+    type: 'html',
+    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ŞABLON</p><p>${escapeHtml(description)}</p><form class="article-funnel-callout__form" method="get" action="/butce-plani/" data-article-funnel-form>${radioGroup('hane_buyuklugu', 'Hane büyüklüğünüz', householdOptions)}${radioGroup('hedef', 'Öncelikli hedefiniz', goalOptions)}<button class="article-funnel-callout__submit" type="submit">${escapeHtml(anchor)}</button></form></aside>`,
+  };
+}
+
+export default function remarkArticleFunnelLinks({ enabled, links, householdOptions, goalOptions }) {
   return (tree, file) => {
     if (!file.path) return;
 
@@ -116,7 +130,10 @@ export default function remarkArticleFunnelLinks({ enabled, links }) {
 
     let tocInsertAt = firstParagraphIndex + 1;
     if (enabled) {
-      tree.children.splice(tocInsertAt, 0, callout(article.callout));
+      const interactive = file.data.astro?.frontmatter?.interactiveFunnelCallout === true;
+      tree.children.splice(tocInsertAt, 0, interactive
+        ? interactiveCallout(article.callout, householdOptions, goalOptions)
+        : callout(article.callout));
       tocInsertAt += 1;
     }
     tree.children.splice(tocInsertAt, 0, tableOfContents(tocHeadings, enabled));

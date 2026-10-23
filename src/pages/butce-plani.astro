@@ -2,55 +2,65 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import HoneypotField from '@/components/HoneypotField.astro';
 import PageIntro from '@/components/PageIntro.astro';
+import { GOAL_OPTIONS, HOUSEHOLD_OPTIONS, PREANSWERED_DESCRIPTION } from '@/data/lead-form-options';
 import { PLACEHOLDERS } from '@/lib/placeholders';
 
 const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
+const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve hedefinize göre hazırlanan bütçe özetini ve indirilebilir XLSX tablosunu görüntüleyin.';
 ---
 
 <BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Hane yapınız ve hedefinize göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu görüntüleyin." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
-  <PageIntro compact eyebrow="Bütçe planı" title="Kişisel bütçe dağılımı ve XLSX şablonu" description="İki kısa soruyu yanıtlayın; hane yapınıza ve hedefinize göre hazırlanan bütçe özetini ve indirilebilir XLSX tablosunu görüntüleyin." />
+  <PageIntro compact eyebrow="Bütçe planı" title="Kişisel bütçe dağılımı ve XLSX şablonu" description={defaultDescription} descriptionId="lead-intro-description" />
   <section class="container py-8 md:py-12">
-    <form id="lead-form" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)}>
+    <form id="lead-form" name="butce-plani" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)} data-household-options={JSON.stringify(HOUSEHOLD_OPTIONS)} data-goal-options={JSON.stringify(GOAL_OPTIONS)} data-preanswered-description={PREANSWERED_DESCRIPTION}>
       <div class="space-y-9" data-lead-step="1">
         <fieldset>
           <legend class="mb-4 text-xl font-bold">Hane büyüklüğünüz</legend>
           <div class="grid gap-3 sm:grid-cols-2">
-            {['1 kişi', '2 kişi', '3–4 kişi', '5 kişi ve üzeri'].map((value) => (
+            {HOUSEHOLD_OPTIONS.map((value) => (
               <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hane_buyuklugu" value={value} required /> {value}</label>
             ))}
           </div>
+          <p id="hane_buyuklugu-error" class="mt-2 text-sm text-accent" data-field-error="hane_buyuklugu" hidden></p>
         </fieldset>
         <fieldset>
           <legend class="mb-4 text-xl font-bold">Öncelikli hedefiniz</legend>
           <div class="grid gap-3">
-            {['Acil durum fonu oluşturmak', 'Harcamaları düzenlemek', 'Planlı bir gider için birikmek'].map((value) => (
+            {GOAL_OPTIONS.map((value) => (
               <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hedef" value={value} required /> {value}</label>
             ))}
           </div>
+          <p id="hedef-error" class="mt-2 text-sm text-accent" data-field-error="hedef" hidden></p>
         </fieldset>
         <button id="lead-next" class="min-h-12 border border-accent bg-paper px-6 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled hidden>Devam</button>
       </div>
       <div class="space-y-9" data-lead-step="2">
+        <p id="lead-preanswered" class="border-l-4 border-accent pl-4 text-sm text-muted" hidden></p>
         <div class="grid gap-5 sm:grid-cols-2">
           <div>
             <label class="mb-2 block font-bold" for="ad">Adınız</label>
             <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
+            <p id="ad-error" class="mt-2 text-sm text-accent" data-field-error="ad" hidden></p>
           </div>
           <div>
             <label class="mb-2 block font-bold" for="soyad">Soyadınız</label>
             <input class="min-h-12 w-full border border-rule bg-white px-4" id="soyad" name="soyad" type="text" autocomplete="family-name" required maxlength="80" />
+            <p id="soyad-error" class="mt-2 text-sm text-accent" data-field-error="soyad" hidden></p>
           </div>
         </div>
         <div>
           <label class="mb-2 block font-bold" for="eposta">E-posta adresiniz</label>
-          <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" autocomplete="email" required maxlength="160" />
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" inputmode="email" autocomplete="email" required maxlength="160" />
+          <p id="eposta-error" class="mt-2 text-sm text-accent" data-field-error="eposta" hidden></p>
         </div>
         <div>
           <label class="mb-2 block font-bold" for="telefon">Telefon numaranız</label>
-          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" autocomplete="tel" required maxlength="30" />
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" value="+90 " />
+          <p id="telefon-error" class="mt-2 text-sm text-accent" data-field-error="telefon" hidden></p>
         </div>
         <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
           <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span>{enabled ? <a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a> : <strong>Aydınlatma Metni</strong>}'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
+          <p id="processing_consent-error" class="text-sm text-accent" data-field-error="processing_consent" hidden></p>
         </div>
         <div class="flex flex-wrap items-center gap-5">
           <button id="lead-back" class="font-semibold text-accent underline underline-offset-4" type="button" hidden>Geri</button>
@@ -60,15 +70,17 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
       </div>
       <input type="hidden" id="tblci" name="tblci" value="" />
       <input type="hidden" id="creo" name="creo" value="" />
+      <input type="hidden" id="preanswered-household" name="hane_buyuklugu" value="" disabled />
+      <input type="hidden" id="preanswered-goal" name="hedef" value="" disabled />
       <HoneypotField />
     </form>
   </section>
 </BaseLayout>
 
 <script is:inline>
-  const enabled = document.querySelector('#lead-form')?.dataset.funnelEnabled === 'true';
-  document.body.dataset.conversionEvent = enabled ? 'funnel_view' : '';
   const leadForm = document.querySelector('#lead-form');
+  const enabled = leadForm?.dataset.funnelEnabled === 'true';
+  document.body.dataset.conversionEvent = enabled ? 'funnel_view' : '';
   const stepOne = document.querySelector('[data-lead-step="1"]');
   const stepTwo = document.querySelector('[data-lead-step="2"]');
   const nextButton = document.querySelector('#lead-next');
@@ -77,8 +89,20 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   const leadStatus = document.querySelector('#lead-status');
   const tblciInput = document.querySelector('#tblci');
   const creoInput = document.querySelector('#creo');
+  const preansweredHousehold = document.querySelector('#preanswered-household');
+  const preansweredGoal = document.querySelector('#preanswered-goal');
+  const preansweredSummary = document.querySelector('#lead-preanswered');
+  const introDescription = document.querySelector('#lead-intro-description');
   if (tblciInput instanceof HTMLInputElement) tblciInput.value = window.safeStorage.get('sessionStorage', 'tblci') || '';
   if (creoInput instanceof HTMLInputElement) creoInput.value = window.safeStorage.get('sessionStorage', 'creo') || '';
+
+  const householdOptions = JSON.parse(leadForm?.dataset.householdOptions || '[]');
+  const goalOptions = JSON.parse(leadForm?.dataset.goalOptions || '[]');
+  const query = new URLSearchParams(location.search);
+  const queryHousehold = query.get('hane_buyuklugu') || '';
+  const queryGoal = query.get('hedef') || '';
+  const hasPreansweredChoices = householdOptions.includes(queryHousehold) && goalOptions.includes(queryGoal);
+  if (leadForm instanceof HTMLFormElement) leadForm.noValidate = true;
 
   const sentFunnelEvents = new Set();
   function honeypotFilled() {
@@ -102,6 +126,8 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 
   function stepOneComplete() {
     if (!(leadForm instanceof HTMLFormElement)) return false;
+    if (preansweredHousehold instanceof HTMLInputElement && preansweredGoal instanceof HTMLInputElement
+      && !preansweredHousehold.disabled && !preansweredGoal.disabled) return true;
     return ['hane_buyuklugu', 'hedef'].every((name) => leadForm.querySelector(`input[name="${name}"]:checked`));
   }
 
@@ -115,6 +141,87 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
     stepTwo.hidden = step !== 2;
   }
 
+  function setPreansweredMode(active) {
+    leadForm?.querySelectorAll('input[type="radio"]').forEach((input) => {
+      if (input instanceof HTMLInputElement) input.disabled = active;
+    });
+    if (preansweredHousehold instanceof HTMLInputElement) {
+      preansweredHousehold.disabled = !active;
+      preansweredHousehold.value = active ? queryHousehold : '';
+    }
+    if (preansweredGoal instanceof HTMLInputElement) {
+      preansweredGoal.disabled = !active;
+      preansweredGoal.value = active ? queryGoal : '';
+    }
+    if (preansweredSummary instanceof HTMLElement) {
+      preansweredSummary.hidden = !active;
+      preansweredSummary.textContent = active ? `Seçimleriniz: ${queryHousehold} · ${queryGoal}` : '';
+    }
+    if (active && introDescription instanceof HTMLElement && leadForm instanceof HTMLFormElement) {
+      introDescription.textContent = leadForm.dataset.preansweredDescription || '';
+    }
+  }
+
+  const validationMessages = {
+    required: 'Bu alanı doldurun.',
+    radio: 'Bir seçenek belirleyin.',
+    email: 'Geçerli bir e-posta adresi girin.',
+    consent: 'Devam etmek için bu onayı işaretleyin.',
+  };
+  const validationOrder = ['hane_buyuklugu', 'hedef', 'ad', 'soyad', 'eposta', 'telefon', 'processing_consent'];
+
+  function controlsFor(name) {
+    if (!(leadForm instanceof HTMLFormElement)) return [];
+    return [...leadForm.querySelectorAll(`[name="${name}"]`)].filter((control) => (
+      control instanceof HTMLInputElement && !control.disabled
+    ));
+  }
+
+  function clearFieldError(name) {
+    const message = document.querySelector(`[data-field-error="${name}"]`);
+    if (message instanceof HTMLElement) {
+      message.hidden = true;
+      message.textContent = '';
+    }
+    controlsFor(name).forEach((control) => control.removeAttribute('aria-invalid'));
+  }
+
+  function fieldError(name) {
+    const controls = controlsFor(name);
+    if (controls.length === 0) return '';
+    if (name === 'hane_buyuklugu' || name === 'hedef') {
+      if (controls.some((control) => control.type === 'hidden' && control.value)) return '';
+      return controls.some((control) => control.checked) ? '' : validationMessages.radio;
+    }
+    const control = controls[0];
+    if (name === 'processing_consent') return control.checked ? '' : validationMessages.consent;
+    if (control.validity.valueMissing) return validationMessages.required;
+    if (name === 'eposta' && control.validity.typeMismatch) return validationMessages.email;
+    return '';
+  }
+
+  function validateAndFocus() {
+    let firstInvalid;
+    validationOrder.forEach((name) => {
+      const error = fieldError(name);
+      const message = document.querySelector(`[data-field-error="${name}"]`);
+      if (message instanceof HTMLElement) {
+        message.textContent = error;
+        message.hidden = !error;
+      }
+      controlsFor(name).forEach((control) => {
+        if (error) control.setAttribute('aria-invalid', 'true');
+        else control.removeAttribute('aria-invalid');
+      });
+      if (error && !firstInvalid) firstInvalid = controlsFor(name)[0];
+    });
+    if (!(firstInvalid instanceof HTMLInputElement)) return true;
+    if (firstInvalid.type === 'radio') showStep(1);
+    firstInvalid.scrollIntoView({ block: 'center' });
+    firstInvalid.focus({ preventScroll: true });
+    return false;
+  }
+
   function updateLeadButton() {
     if (!(leadForm instanceof HTMLFormElement) || !(leadButton instanceof HTMLButtonElement)) return;
     const consents = [...leadForm.querySelectorAll('input[type="checkbox"][required]')];
@@ -122,10 +229,12 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   }
   if (stepOne instanceof HTMLElement && stepTwo instanceof HTMLElement && nextButton instanceof HTMLButtonElement && backButton instanceof HTMLButtonElement) {
     nextButton.hidden = false;
-    backButton.hidden = false;
-    showStep(1);
+    backButton.hidden = hasPreansweredChoices;
+    setPreansweredMode(hasPreansweredChoices);
+    showStep(hasPreansweredChoices ? 2 : 1);
     updateNextButton();
     leadForm?.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', () => {
+      clearFieldError(input.getAttribute('name') || '');
       recordFunnelEvent('step1_answer');
       updateNextButton();
     }));
@@ -138,25 +247,29 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
       document.querySelector('#ad')?.focus();
     });
     backButton.addEventListener('click', () => {
+      setPreansweredMode(false);
       showStep(1);
       document.querySelector('input[name="hane_buyuklugu"]')?.focus();
     });
   }
   if (leadButton instanceof HTMLButtonElement) leadButton.disabled = true;
   updateLeadButton();
+  leadForm?.addEventListener('invalid', (event) => event.preventDefault(), true);
+  leadForm?.querySelectorAll('input').forEach((input) => {
+    input.addEventListener('input', () => clearFieldError(input.name));
+  });
   leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', () => {
-    if (input instanceof HTMLInputElement && input.checked) recordFunnelEvent('consent_tick');
+    clearFieldError(input.getAttribute('name') || '');
+    if (input instanceof HTMLInputElement && input.checked) {
+      recordFunnelEvent('consent_tick');
+      leadButton?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     updateLeadButton();
   }));
   leadForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement)) return;
-    if (!stepOneComplete()) {
-      showStep(1);
-      leadForm.reportValidity();
-      return;
-    }
-    if (!leadForm.reportValidity()) return;
+    if (!validateAndFocus()) return;
     recordFunnelEvent('consent_tick');
     recordFunnelEvent('submit_attempt');
     leadButton.disabled = true;
