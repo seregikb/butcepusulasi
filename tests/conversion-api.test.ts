@@ -24,6 +24,19 @@ function request(form: FormData, headers: HeadersInit = {}): Request {
   return new Request('https://butcepusulasi.com/api/conversion', { method: 'POST', body: form, headers });
 }
 
+function navigationRequest(form: FormData): Request {
+  const body = new URLSearchParams();
+  form.forEach((value, key) => body.append(key, String(value)));
+  return new Request('https://butcepusulasi.com/api/conversion', {
+    method: 'POST',
+    headers: {
+      Accept: 'text/html,application/xhtml+xml',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+}
+
 function env(overrides: Record<string, unknown> = {}) {
   return {
     PUBLIC_LEAD_FUNNEL_ENABLED: 'true',
@@ -45,6 +58,43 @@ afterEach(() => {
 });
 
 describe('lead conversion endpoint', () => {
+  it('redirects successful navigation submissions without changing fetch JSON', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(partnerSuccessResponse()));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const navigation = await onRequestPost({
+      request: navigationRequest(leadForm()),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+    const fetchResponse = await onRequestPost({
+      request: request(leadForm()),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(navigation.status).toBe(303);
+    expect(navigation.headers.get('Location')).toBe('https://butcepusulasi.com/tesekkurler/');
+    expect(await navigation.text()).toBe('');
+    expect(fetchResponse.status).toBe(200);
+    expect(fetchResponse.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
+    await expect(fetchResponse.json()).resolves.toEqual({ ok: true });
+  });
+
+  it('redirects failed navigation submissions back to the form', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await onRequestPost({
+      request: navigationRequest(leadForm({ soyad: '' })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('Location')).toBe('https://butcepusulasi.com/butce-plani/');
+    expect(await response.text()).toBe('');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('checks the server-side funnel flag before parsing or forwarding', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);

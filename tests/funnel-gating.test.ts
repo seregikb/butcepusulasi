@@ -148,7 +148,10 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani'].match(/<input\b[^>]*type="checkbox"[^>]*>/g)).toHaveLength(1);
     expect(enabled.routeHtml['butce-plani']).not.toContain('name="transfer_consent"');
     expect(enabled.routeHtml['butce-plani']).toContain("campaignParams.get('utm_content')");
-    expect(enabled.routeHtml['butce-plani']).toContain("sessionStorage.setItem('creo', creativeId)");
+    expect(enabled.routeHtml['butce-plani']).toContain("window.safeStorage.set('sessionStorage', 'creo', creativeId)");
+    expect(enabled.routeHtml['butce-plani']).toContain('window.safeStorage =');
+    expect(enabled.routeHtml['butce-plani']).not.toMatch(/(?<!safeStorage\.)sessionStorage\.(?:getItem|setItem)/);
+    expect(enabled.routeHtml['butce-plani']).not.toMatch(/(?<!safeStorage\.)localStorage\.(?:getItem|setItem)/);
     expect(enabled.anchorPages['butce-plani']).toHaveLength(articleSlugs.length * 5);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
       new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),

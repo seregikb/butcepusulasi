@@ -77,8 +77,28 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   const leadStatus = document.querySelector('#lead-status');
   const tblciInput = document.querySelector('#tblci');
   const creoInput = document.querySelector('#creo');
-  if (tblciInput instanceof HTMLInputElement) tblciInput.value = sessionStorage.getItem('tblci') || '';
-  if (creoInput instanceof HTMLInputElement) creoInput.value = sessionStorage.getItem('creo') || '';
+  if (tblciInput instanceof HTMLInputElement) tblciInput.value = window.safeStorage.get('sessionStorage', 'tblci') || '';
+  if (creoInput instanceof HTMLInputElement) creoInput.value = window.safeStorage.get('sessionStorage', 'creo') || '';
+
+  const sentFunnelEvents = new Set();
+  function honeypotFilled() {
+    if (!(leadForm instanceof HTMLFormElement)) return false;
+    const honeypot = leadForm.elements.namedItem('website');
+    return honeypot instanceof HTMLInputElement && Boolean(honeypot.value);
+  }
+
+  function recordFunnelEvent(name) {
+    if (!enabled || sentFunnelEvents.has(name) || honeypotFilled()) return;
+    sentFunnelEvents.add(name);
+    fetch('/api/funnel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: name }),
+      keepalive: true,
+    }).catch(() => undefined);
+  }
+
+  setTimeout(() => recordFunnelEvent('form_view'), 0);
 
   function stepOneComplete() {
     if (!(leadForm instanceof HTMLFormElement)) return false;
@@ -105,9 +125,15 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
     backButton.hidden = false;
     showStep(1);
     updateNextButton();
-    leadForm?.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', updateNextButton));
+    leadForm?.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', () => {
+      recordFunnelEvent('step1_answer');
+      updateNextButton();
+    }));
+    document.querySelector('#ad')?.addEventListener('focus', () => recordFunnelEvent('step2_focus'), { once: true });
     nextButton.addEventListener('click', () => {
       if (!stepOneComplete()) return;
+      recordFunnelEvent('step1_answer');
+      recordFunnelEvent('step1_complete');
       showStep(2);
       document.querySelector('#ad')?.focus();
     });
@@ -118,7 +144,10 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
   }
   if (leadButton instanceof HTMLButtonElement) leadButton.disabled = true;
   updateLeadButton();
-  leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateLeadButton));
+  leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', () => {
+    if (input instanceof HTMLInputElement && input.checked) recordFunnelEvent('consent_tick');
+    updateLeadButton();
+  }));
   leadForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement)) return;
@@ -128,6 +157,8 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
       return;
     }
     if (!leadForm.reportValidity()) return;
+    recordFunnelEvent('consent_tick');
+    recordFunnelEvent('submit_attempt');
     leadButton.disabled = true;
     leadStatus.textContent = 'Bilgiler gönderiliyor…';
     try {

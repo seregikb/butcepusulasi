@@ -30,7 +30,7 @@ const renderTaboola = Boolean(taboolaId && taboolaEvent);
   (() => {
     let loaded = false;
     function loadAnalytics() {
-      if (loaded || localStorage.getItem('butce-pusulasi-cookie-consent') !== 'accepted') return;
+      if (loaded || window.safeStorage.get('localStorage', 'butce-pusulasi-cookie-consent') !== 'accepted') return;
       loaded = true;
       const config = document.querySelector('#analytics-config');
       const ga4 = config?.getAttribute('data-ga4');
@@ -78,7 +78,7 @@ const renderTaboola = Boolean(taboolaId && taboolaEvent);
       (() => {
         let loaded = false;
         function loadTaboola() {
-          if (loaded || localStorage.getItem('butce-pusulasi-cookie-consent') !== 'accepted') return;
+          if (loaded || window.safeStorage.get('localStorage', 'butce-pusulasi-cookie-consent') !== 'accepted') return;
           const config = document.querySelector('#taboola-config');
           const id = config?.getAttribute('data-taboola');
           const eventName = config?.getAttribute('data-event');

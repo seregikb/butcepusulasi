@@ -17,7 +17,7 @@
     const banner = document.querySelector('#cookie-banner');
     const header = document.querySelector('body > header');
     const hero = document.querySelector('[data-consent-hero] .cover-art');
-    const choice = localStorage.getItem(key);
+    const choice = window.safeStorage.get('localStorage', key);
     let heroPosition;
     let frame;
 
@@ -76,7 +76,7 @@
       button.addEventListener('click', () => {
         const value = button.getAttribute('data-cookie-choice');
         if (!value) return;
-        localStorage.setItem(key, value);
+        window.safeStorage.set('localStorage', key, value);
         stopPositioning();
         banner?.classList.add('hidden');
         banner?.setAttribute('aria-hidden', 'true');

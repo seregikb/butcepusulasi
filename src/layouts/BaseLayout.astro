@@ -3,6 +3,7 @@ import Analytics from '@/components/Analytics.astro';
 import CookieBanner from '@/components/CookieBanner.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
+import SafeStorage from '@/components/SafeStorage.astro';
 import { CONTACT, CONTACT_POSTAL_ADDRESS } from '@/data/contact';
 import { SITE } from '@/lib/site';
 import '@/styles/global.css';
@@ -77,6 +78,7 @@ const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
     {schemas.map((entry) => <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />)}
   </head>
   <body>
+    <SafeStorage />
     <Header />
     <main id="main-content">
       <slot />
@@ -89,8 +91,8 @@ const funnelEnabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
         const campaignParams = new URLSearchParams(location.search);
         const clickId = campaignParams.get('tblci');
         const creativeId = campaignParams.get('utm_content');
-        if (clickId) sessionStorage.setItem('tblci', clickId);
-        if (creativeId) sessionStorage.setItem('creo', creativeId);
+        if (clickId) window.safeStorage.set('sessionStorage', 'tblci', clickId);
+        if (creativeId) window.safeStorage.set('sessionStorage', 'creo', creativeId);
       </script>
     )}
   </body>

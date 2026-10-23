@@ -11,3 +11,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Window {
+  safeStorage: {
+    get(area: 'localStorage' | 'sessionStorage', key: string): string | null;
+    set(area: 'localStorage' | 'sessionStorage', key: string, value: string): void;
+  };
+}

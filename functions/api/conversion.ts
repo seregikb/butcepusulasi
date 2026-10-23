@@ -21,6 +21,24 @@ function json(data: Record<string, unknown>, status = 200): Response {
   });
 }
 
+function isNavigationSubmission(request: Request): boolean {
+  const accept = request.headers.get('Accept')?.toLowerCase() || '';
+  const contentType = request.headers.get('Content-Type')?.toLowerCase() || '';
+  return accept.includes('text/html') || contentType.startsWith('application/x-www-form-urlencoded');
+}
+
+function result(request: Request, data: Record<string, unknown>, status = 200): Response {
+  if (!isNavigationSubmission(request)) return json(data, status);
+  const destination = status < 400 ? '/tesekkurler/' : '/butce-plani/';
+  return new Response(null, {
+    status: 303,
+    headers: {
+      Location: new URL(destination, request.url).toString(),
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
 function languageFromHeader(value: string | null): string {
   const firstTag = value?.split(',')[0]?.split(';')[0]?.trim() || '';
   return firstTag.match(/^[A-Za-z]{2}/)?.[0].toUpperCase() || '';
@@ -136,17 +154,17 @@ async function sendTaboolaConversion(endpoint: string, eventName: string, tblci:
 
 export async function onRequestPost(context: PagesContext): Promise<Response> {
   const { request, env } = context;
-  if (env.PUBLIC_LEAD_FUNNEL_ENABLED !== 'true') return json({ ok: false, message: 'Bulunamadı.' }, 404);
+  if (env.PUBLIC_LEAD_FUNNEL_ENABLED !== 'true') return result(request, { ok: false, message: 'Bulunamadı.' }, 404);
   const form = await request.formData();
-  if (String(form.get('website') || '')) return json({ ok: true });
+  if (String(form.get('website') || '')) return result(request, { ok: true });
 
   const required = ['ad', 'soyad', 'hane_buyuklugu', 'hedef', 'processing_consent'];
-  if (required.some((field) => !form.get(field))) return json({ ok: false, message: 'Eksik alan.' }, 400);
+  if (required.some((field) => !form.get(field))) return result(request, { ok: false, message: 'Eksik alan.' }, 400);
   const email = String(form.get('eposta') || '').trim();
   const phone = String(form.get('telefon') || '').trim();
-  if (!email || !phone) return json({ ok: false, message: 'İletişim bilgileri gerekli.' }, 400);
+  if (!email || !phone) return result(request, { ok: false, message: 'İletişim bilgileri gerekli.' }, 400);
   const endpoint = env.LEAD_ENDPOINT?.trim();
-  if (!endpoint) return json({ ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
+  if (!endpoint) return result(request, { ok: false, message: 'Endpoint henüz yapılandırılmadı.' }, 503);
 
   const tblci = String(form.get('tblci') || '').trim();
   const partnerPayload = {
@@ -175,7 +193,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     });
   } catch {
     await storeFailedLead(env.LEAD_FAILURES, partnerPayload, form, {});
-    return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
+    return result(request, { ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
   const downstreamBody = await readResponseBody(response);
@@ -193,7 +211,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
       click_id: tblci,
       creo: partnerPayload.creo,
     }));
-    return json({ ok: true });
+    return result(request, { ok: true });
   }
 
   if (!accepted) {
@@ -207,7 +225,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
         downstreamMessage: safePartnerDiagnostic(downstreamMessage, form),
       },
     );
-    return json({ ok: false, message: 'Aktarım başarısız.' }, 502);
+    return result(request, { ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
   const taboolaEndpoint = env.TABOOLA_S2S_ENDPOINT?.trim();
@@ -216,5 +234,5 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     context.waitUntil(sendTaboolaConversion(taboolaEndpoint, taboolaEventName, tblci));
   }
 
-  return json({ ok: true });
+  return result(request, { ok: true });
 }

@@ -1,0 +1,25 @@
+<script is:inline>
+  (() => {
+    const memory = new Map();
+    const memoryKey = (area, key) => `${area}:${key}`;
+
+    window.safeStorage = {
+      get(area, key) {
+        const fallback = memory.get(memoryKey(area, key)) ?? null;
+        try {
+          return window[area].getItem(key) ?? fallback;
+        } catch {
+          return fallback;
+        }
+      },
+      set(area, key, value) {
+        memory.set(memoryKey(area, key), value);
+        try {
+          window[area].setItem(key, value);
+        } catch {
+          // The in-memory value remains available for this page view.
+        }
+      },
+    };
+  })();
+</script>
