@@ -34,6 +34,7 @@
   --color-rule: #deded7;
   --color-accent: #0f4c4a;
   --color-accent-soft: #e8f0ed;
+  --color-error: #b42318;
 }
 
 :root {
@@ -67,6 +68,18 @@ a {
 :focus-visible {
   outline: 3px solid #2d7572;
   outline-offset: 3px;
+}
+
+#lead-form [aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+#lead-form [aria-invalid="true"]:focus-visible {
+  outline-color: var(--color-error);
+}
+
+#lead-form fieldset:has(input[aria-invalid="true"]) label {
+  border-color: var(--color-error);
 }
 
 .container {

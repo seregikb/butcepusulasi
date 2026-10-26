@@ -21,7 +21,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
               <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hane_buyuklugu" value={value} required /> {value}</label>
             ))}
           </div>
-          <p id="hane_buyuklugu-error" class="mt-2 text-sm text-accent" data-field-error="hane_buyuklugu" hidden></p>
+          <p id="hane_buyuklugu-error" class="mt-2 text-sm text-error" data-field-error="hane_buyuklugu" hidden></p>
         </fieldset>
         <fieldset>
           <legend class="mb-4 text-xl font-bold">Öncelikli hedefiniz</legend>
@@ -30,7 +30,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
               <label class="flex min-h-12 items-center gap-3 border border-rule bg-white px-4"><input type="radio" name="hedef" value={value} required /> {value}</label>
             ))}
           </div>
-          <p id="hedef-error" class="mt-2 text-sm text-accent" data-field-error="hedef" hidden></p>
+          <p id="hedef-error" class="mt-2 text-sm text-error" data-field-error="hedef" hidden></p>
         </fieldset>
         <button id="lead-next" class="min-h-12 border border-accent bg-paper px-6 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled hidden>Devam</button>
       </div>
@@ -40,27 +40,27 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
           <div>
             <label class="mb-2 block font-bold" for="ad">Adınız</label>
             <input class="min-h-12 w-full border border-rule bg-white px-4" id="ad" name="ad" type="text" autocomplete="given-name" required maxlength="80" />
-            <p id="ad-error" class="mt-2 text-sm text-accent" data-field-error="ad" hidden></p>
+            <p id="ad-error" class="mt-2 text-sm text-error" data-field-error="ad" hidden></p>
           </div>
           <div>
             <label class="mb-2 block font-bold" for="soyad">Soyadınız</label>
             <input class="min-h-12 w-full border border-rule bg-white px-4" id="soyad" name="soyad" type="text" autocomplete="family-name" required maxlength="80" />
-            <p id="soyad-error" class="mt-2 text-sm text-accent" data-field-error="soyad" hidden></p>
+            <p id="soyad-error" class="mt-2 text-sm text-error" data-field-error="soyad" hidden></p>
           </div>
         </div>
         <div>
           <label class="mb-2 block font-bold" for="eposta">E-posta adresiniz</label>
           <input class="min-h-12 w-full border border-rule bg-white px-4" id="eposta" name="eposta" type="email" inputmode="email" autocomplete="email" required maxlength="160" />
-          <p id="eposta-error" class="mt-2 text-sm text-accent" data-field-error="eposta" hidden></p>
+          <p id="eposta-error" class="mt-2 text-sm text-error" data-field-error="eposta" hidden></p>
         </div>
         <div>
           <label class="mb-2 block font-bold" for="telefon">Telefon numaranız</label>
-          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" value="+90 " />
-          <p id="telefon-error" class="mt-2 text-sm text-accent" data-field-error="telefon" hidden></p>
+          <input class="min-h-12 w-full border border-rule bg-white px-4" id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" pattern="(?:[+]90|0)?[ ()-]*5[0-9](?:[ ()-]*[0-9]){8}" value="+90 " />
+          <p id="telefon-error" class="mt-2 text-sm text-error" data-field-error="telefon" hidden></p>
         </div>
         <div class="space-y-4 border-t border-rule pt-7 text-sm leading-6">
           <label class="flex items-start gap-3"><input class="mt-1" type="checkbox" name="processing_consent" required /> <span>{enabled ? <a class="font-bold text-accent underline" href="/aydinlatma-metni/">Aydınlatma Metni</a> : <strong>Aydınlatma Metni</strong>}'ni okudum; kişisel verilerimin {PLACEHOLDERS.DATA_CONTROLLER_LEGAL_NAME} tarafından {PLACEHOLDERS.LEAD_PURPOSE_TR} amacıyla işlenmesini kabul ediyorum.</span></label>
-          <p id="processing_consent-error" class="text-sm text-accent" data-field-error="processing_consent" hidden></p>
+          <p id="processing_consent-error" class="text-sm text-error" data-field-error="processing_consent" hidden></p>
         </div>
         <div class="flex flex-wrap items-center gap-5">
           <button id="lead-back" class="font-semibold text-accent underline underline-offset-4" type="button" hidden>Geri</button>
@@ -166,6 +166,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
     required: 'Bu alanı doldurun.',
     radio: 'Bir seçenek belirleyin.',
     email: 'Geçerli bir e-posta adresi girin.',
+    phone: 'Telefon numaranızı girin.',
     consent: 'Devam etmek için bu onayı işaretleyin.',
   };
   const validationOrder = ['hane_buyuklugu', 'hedef', 'ad', 'soyad', 'eposta', 'telefon', 'processing_consent'];
@@ -177,13 +178,34 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
     ));
   }
 
-  function clearFieldError(name) {
+  function setFieldError(name, error) {
     const message = document.querySelector(`[data-field-error="${name}"]`);
     if (message instanceof HTMLElement) {
-      message.hidden = true;
-      message.textContent = '';
+      message.hidden = !error;
+      message.textContent = error;
     }
-    controlsFor(name).forEach((control) => control.removeAttribute('aria-invalid'));
+    controlsFor(name).forEach((control) => {
+      if (error) {
+        control.setAttribute('aria-invalid', 'true');
+        control.setAttribute('aria-describedby', `${name}-error`);
+      } else {
+        control.removeAttribute('aria-invalid');
+        control.removeAttribute('aria-describedby');
+      }
+    });
+  }
+
+  function clearFieldError(name) {
+    setFieldError(name, '');
+  }
+
+  function isTurkishMobile(value) {
+    const trimmed = value.trim();
+    if (!/^[+\d\s().-]+$/.test(trimmed)) return false;
+    let digits = trimmed.replace(/\D/g, '');
+    if (digits.startsWith('90')) digits = digits.slice(2);
+    else if (digits.startsWith('0')) digits = digits.slice(1);
+    return /^5\d{9}$/.test(digits);
   }
 
   function fieldError(name) {
@@ -197,6 +219,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
     if (name === 'processing_consent') return control.checked ? '' : validationMessages.consent;
     if (control.validity.valueMissing) return validationMessages.required;
     if (name === 'eposta' && control.validity.typeMismatch) return validationMessages.email;
+    if (name === 'telefon' && !isTurkishMobile(control.value)) return validationMessages.phone;
     return '';
   }
 
@@ -204,15 +227,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
     let firstInvalid;
     validationOrder.forEach((name) => {
       const error = fieldError(name);
-      const message = document.querySelector(`[data-field-error="${name}"]`);
-      if (message instanceof HTMLElement) {
-        message.textContent = error;
-        message.hidden = !error;
-      }
-      controlsFor(name).forEach((control) => {
-        if (error) control.setAttribute('aria-invalid', 'true');
-        else control.removeAttribute('aria-invalid');
-      });
+      setFieldError(name, error);
       if (error && !firstInvalid) firstInvalid = controlsFor(name)[0];
     });
     if (!(firstInvalid instanceof HTMLInputElement)) return true;
@@ -256,7 +271,9 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
   updateLeadButton();
   leadForm?.addEventListener('invalid', (event) => event.preventDefault(), true);
   leadForm?.querySelectorAll('input').forEach((input) => {
-    input.addEventListener('input', () => clearFieldError(input.name));
+    input.addEventListener('input', () => {
+      if (input.hasAttribute('aria-invalid')) setFieldError(input.name, fieldError(input.name));
+    });
   });
   leadForm?.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', () => {
     clearFieldError(input.getAttribute('name') || '');
