@@ -27,7 +27,7 @@ describe('lead page query middleware', () => {
     expect(html).toContain('id="preanswered-household" name="hane_buyuklugu" value="1 kişi"');
     expect(html).toContain('id="preanswered-goal" name="hedef" value="Harcamaları düzenlemek"');
     expect(html).toContain('Seçimleriniz: 1 kişi · Harcamaları düzenlemek');
-    expect(html).toContain('Seçimlerinizi aldık. İletişim bilgilerinizi girin, tabloyu ve bütçe özetinizi gönderelim.');
+    expect(html).toContain('Hane yapınıza göre hazırlanan bütçe dağılımını ve 12 aylık tabloyu e-posta ile gönderelim.');
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
   });
 

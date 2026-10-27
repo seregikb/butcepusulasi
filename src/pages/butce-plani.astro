@@ -6,11 +6,11 @@ import { GOAL_OPTIONS, HOUSEHOLD_OPTIONS, PREANSWERED_DESCRIPTION } from '@/data
 import { PLACEHOLDERS } from '@/lib/placeholders';
 
 const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
-const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve hedefinize göre hazırlanan bütçe özetini ve indirilebilir XLSX tablosunu görüntüleyin.';
+const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 aylık gelir gider tablosunu ve size göre hazırlanan bütçe dağılımını gönderelim.';
 ---
 
-<BaseLayout title="Gelirinize Göre Bütçe Dağılımı ve 12 Aylık Takip Tablosu" description="Hane yapınız ve hedefinize göre bütçe dağılımı özeti ile 12 aylık gelir gider XLSX tablosunu görüntüleyin." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
-  <PageIntro compact compactMobileTitle eyebrow="Bütçe planı" title="Gelirinize göre bütçe dağılımı ve 12 aylık takip tablosu" description={defaultDescription} descriptionId="lead-intro-description" />
+<BaseLayout title="Hane Yapınıza Göre Bütçe Dağılımı ve 12 Aylık Takip Tablosu" description="Hane büyüklüğünüz ve hedefinize göre hazırlanan bütçe dağılımı ile 12 aylık gelir gider tablosunu alın." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
+  <PageIntro compact compactMobileTitle eyebrow="Bütçe planı" title="Hane yapınıza göre bütçe dağılımı ve 12 aylık takip tablosu" description={defaultDescription} descriptionId="lead-intro-description" />
   <section class="container py-8 md:py-12">
     <form id="lead-form" name="butce-plani" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)} data-household-options={JSON.stringify(HOUSEHOLD_OPTIONS)} data-goal-options={JSON.stringify(GOAL_OPTIONS)} data-preanswered-description={PREANSWERED_DESCRIPTION}>
       <figure class="mb-4">
