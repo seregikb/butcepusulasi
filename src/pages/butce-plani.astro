@@ -14,22 +14,25 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
   <section class="container py-8 md:py-12">
     <form id="lead-form" name="butce-plani" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)} data-household-options={JSON.stringify(HOUSEHOLD_OPTIONS)} data-goal-options={JSON.stringify(GOAL_OPTIONS)} data-preanswered-description={PREANSWERED_DESCRIPTION}>
       <figure class="mb-4">
-        <div class="spreadsheet-preview border border-rule">
+        <div class="spreadsheet-preview">
           <span class="spreadsheet-preview__strip">
             <img
               src="/images/gelir-gider-tablosu-preview.webp"
               width="1200"
-              height="680"
+              height="1040"
               loading="lazy"
               decoding="async"
               alt="Ocak ayı örnek gelir ve giderleri, otomatik toplamları, yıllık özeti ve 12 aylık sekmeleri gösteren bütçe tablosu"
             />
           </span>
           <span class="spreadsheet-preview__strip" aria-hidden="true">
-            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="680" loading="lazy" decoding="async" alt="" />
+            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="1040" loading="lazy" decoding="async" alt="" />
           </span>
           <span class="spreadsheet-preview__strip" aria-hidden="true">
-            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="680" loading="lazy" decoding="async" alt="" />
+            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="1040" loading="lazy" decoding="async" alt="" />
+          </span>
+          <span class="spreadsheet-preview__strip" aria-hidden="true">
+            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="1040" loading="lazy" decoding="async" alt="" />
           </span>
         </div>
         <figcaption class="mt-2 text-sm text-muted">Tablodaki rakamlar örnektir.</figcaption>
@@ -107,10 +110,13 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
   .spreadsheet-preview {
     display: grid;
     width: 100%;
-    max-height: 15rem;
-    aspect-ratio: 1200 / 680;
-    grid-template-rows: repeat(3, 1fr);
+    max-height: 20rem;
+    aspect-ratio: 1200 / 1050;
+    border: 2px solid var(--color-rule);
+    background: var(--color-accent-soft);
+    grid-template-rows: repeat(4, 1fr);
     overflow: hidden;
+    padding: 0.75rem;
   }
 
   .spreadsheet-preview__strip {
@@ -125,11 +131,13 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
     width: 100%;
     max-width: none;
     height: auto;
+    object-fit: contain;
   }
 
   .spreadsheet-preview__strip:nth-child(1) img { top: 0; }
   .spreadsheet-preview__strip:nth-child(2) img { top: -100%; }
   .spreadsheet-preview__strip:nth-child(3) img { top: -200%; }
+  .spreadsheet-preview__strip:nth-child(4) img { top: -300%; }
 
   @media (min-width: 768px) {
     .spreadsheet-preview { max-height: none; }
