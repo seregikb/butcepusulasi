@@ -95,10 +95,10 @@ function radioGroup(name, legend, options) {
   return `<fieldset><legend>${legend}</legend><div class="article-funnel-callout__options">${choices}</div></fieldset>`;
 }
 
-function interactiveCallout({ description, anchor }, householdOptions, goalOptions) {
+function interactiveCallout({ description }, householdOptions, goalOptions) {
   return {
     type: 'html',
-    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ŞABLON</p><p>${escapeHtml(description)}</p><form class="article-funnel-callout__form" method="get" action="/butce-plani/" data-article-funnel-form>${radioGroup('hane_buyuklugu', 'Hane büyüklüğünüz', householdOptions)}${radioGroup('hedef', 'Öncelikli hedefiniz', goalOptions)}<button class="article-funnel-callout__submit" type="submit">${escapeHtml(anchor)}</button></form></aside>`,
+    value: `<aside class="article-funnel-callout"><p class="article-funnel-callout__label">ŞABLON</p><p>${escapeHtml(description)}</p><form class="article-funnel-callout__form" method="get" action="/butce-plani/" data-article-funnel-form>${radioGroup('hane_buyuklugu', 'Hane büyüklüğünüz', householdOptions)}${radioGroup('hedef', 'Öncelikli hedefiniz', goalOptions)}<button class="article-funnel-callout__submit" type="submit">Bütçe özetimi görüntüle</button></form></aside>`,
   };
 }
 

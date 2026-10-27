@@ -107,9 +107,25 @@ const faqSchema = post.data.faq ? {
       const complete = () => ['hane_buyuklugu', 'hedef'].every((name) => (
         form.querySelector(`input[name="${name}"]:checked`)
       ));
+      const bringButtonIntoView = () => {
+        const buttonRect = button.getBoundingClientRect();
+        const header = document.querySelector('body > header');
+        const banner = document.querySelector('#cookie-banner:not(.hidden)');
+        const headerHeight = header instanceof HTMLElement ? header.getBoundingClientRect().height : 0;
+        const bannerHeight = banner instanceof HTMLElement ? banner.getBoundingClientRect().height : 0;
+        const safeTop = headerHeight + bannerHeight;
+        const fullyVisible = buttonRect.top >= safeTop && buttonRect.bottom <= window.innerHeight;
+        if (fullyVisible) return;
+        const root = document.documentElement;
+        const previousScrollBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        window.scrollTo({ top: window.scrollY + buttonRect.top - safeTop, behavior: 'auto' });
+        requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
+      };
       form.querySelectorAll('input[type="radio"]').forEach((input) => input.addEventListener('change', () => {
         record('callout_answer');
         button.disabled = !complete();
+        if (!button.disabled) requestAnimationFrame(bringButtonIntoView);
       }));
       form.addEventListener('submit', () => record('callout_submit'));
     });

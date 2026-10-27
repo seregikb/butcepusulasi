@@ -199,8 +199,10 @@ describe('lead funnel route gating', () => {
         expect(html).toContain('<form class="article-funnel-callout__form" method="get" action="/butce-plani/" data-article-funnel-form="">');
         expect(html).toContain('name="hane_buyuklugu"');
         expect(html).toContain('name="hedef"');
+        expect(html).toContain('<button class="article-funnel-callout__submit" type="submit">Bütçe özetimi görüntüle</button>');
       } else {
         expect(html).not.toContain('data-article-funnel-form');
+        expect(html).not.toContain('<button class="article-funnel-callout__submit"');
       }
     }
     expect(new Set(firstAnchorTexts).size).toBe(articleSlugs.length);
