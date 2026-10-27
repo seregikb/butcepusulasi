@@ -6,4 +6,4 @@ export const GOAL_OPTIONS = [
   'Planlı bir gider için birikmek',
 ] as const;
 
-export const PREANSWERED_DESCRIPTION = 'Seçimlerinizi aldık; iletişim bilgilerinizi girerek bütçe özetinizi görüntüleyin.';
+export const PREANSWERED_DESCRIPTION = 'Seçimlerinizi aldık. İletişim bilgilerinizi girin, tabloyu ve bütçe özetinizi gönderelim.';

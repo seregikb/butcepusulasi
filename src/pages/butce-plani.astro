@@ -9,10 +9,36 @@ const enabled = import.meta.env.PUBLIC_LEAD_FUNNEL_ENABLED === 'true';
 const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve hedefinize göre hazırlanan bütçe özetini ve indirilebilir XLSX tablosunu görüntüleyin.';
 ---
 
-<BaseLayout title="Kişisel Bütçe Dağılımı ve XLSX Şablonu" description="Hane yapınız ve hedefinize göre bütçe dağılımı özeti ile aylık gelir gider XLSX şablonunu görüntüleyin." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
-  <PageIntro compact eyebrow="Bütçe planı" title="Kişisel bütçe dağılımı ve XLSX şablonu" description={defaultDescription} descriptionId="lead-intro-description" />
+<BaseLayout title="Gelirinize Göre Bütçe Dağılımı ve 12 Aylık Takip Tablosu" description="Hane yapınız ve hedefinize göre bütçe dağılımı özeti ile 12 aylık gelir gider XLSX tablosunu görüntüleyin." robots={enabled ? 'index, follow' : 'noindex, nofollow'}>
+  <PageIntro compact compactMobileTitle eyebrow="Bütçe planı" title="Gelirinize göre bütçe dağılımı ve 12 aylık takip tablosu" description={defaultDescription} descriptionId="lead-intro-description" />
   <section class="container py-8 md:py-12">
     <form id="lead-form" name="butce-plani" class="mx-auto max-w-2xl" action="/api/conversion" method="post" data-funnel-enabled={String(enabled)} data-household-options={JSON.stringify(HOUSEHOLD_OPTIONS)} data-goal-options={JSON.stringify(GOAL_OPTIONS)} data-preanswered-description={PREANSWERED_DESCRIPTION}>
+      <figure class="mb-4">
+        <div class="spreadsheet-preview border border-rule">
+          <span class="spreadsheet-preview__strip">
+            <img
+              src="/images/gelir-gider-tablosu-preview.webp"
+              width="1200"
+              height="680"
+              loading="lazy"
+              decoding="async"
+              alt="Ocak ayı örnek gelir ve giderleri, otomatik toplamları, yıllık özeti ve 12 aylık sekmeleri gösteren bütçe tablosu"
+            />
+          </span>
+          <span class="spreadsheet-preview__strip" aria-hidden="true">
+            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="680" loading="lazy" decoding="async" alt="" />
+          </span>
+          <span class="spreadsheet-preview__strip" aria-hidden="true">
+            <img src="/images/gelir-gider-tablosu-preview.webp" width="1200" height="680" loading="lazy" decoding="async" alt="" />
+          </span>
+        </div>
+        <figcaption class="mt-2 text-sm text-muted">Tablodaki rakamlar örnektir.</figcaption>
+      </figure>
+      <div class="mb-9 space-y-1 text-sm leading-6 text-muted" aria-label="Tablo içeriği">
+        <p>12 aylık sayfa, her ay için ayrı tablo</p>
+        <p>Gelir ve gider kalemleri için otomatik toplam</p>
+        <p>Yıllık özette aylık gelir, gider ve net fark</p>
+      </div>
       <div class="space-y-9" data-lead-step="1">
         <fieldset>
           <legend class="mb-4 text-xl font-bold">Hane büyüklüğünüz</legend>
@@ -64,7 +90,7 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
         </div>
         <div class="flex flex-wrap items-center gap-5">
           <button id="lead-back" class="font-semibold text-accent underline underline-offset-4" type="button" hidden>Geri</button>
-          <button id="lead-submit" class="min-h-12 border border-accent bg-accent px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" type="submit">Planımı oluştur</button>
+          <button id="lead-submit" class="min-h-12 w-full border border-accent bg-accent px-6 font-bold text-paper disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto" type="submit">Planımı oluştur</button>
         </div>
         <p id="lead-status" class="min-h-6 text-sm font-semibold" role="status" aria-live="polite"></p>
       </div>
@@ -76,6 +102,39 @@ const defaultDescription = 'İki kısa soruyu yanıtlayın; hane yapınıza ve h
     </form>
   </section>
 </BaseLayout>
+
+<style>
+  .spreadsheet-preview {
+    display: grid;
+    width: 100%;
+    max-height: 15rem;
+    aspect-ratio: 1200 / 680;
+    grid-template-rows: repeat(3, 1fr);
+    overflow: hidden;
+  }
+
+  .spreadsheet-preview__strip {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+
+  .spreadsheet-preview__strip img {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    height: auto;
+  }
+
+  .spreadsheet-preview__strip:nth-child(1) img { top: 0; }
+  .spreadsheet-preview__strip:nth-child(2) img { top: -100%; }
+  .spreadsheet-preview__strip:nth-child(3) img { top: -200%; }
+
+  @media (min-width: 768px) {
+    .spreadsheet-preview { max-height: none; }
+  }
+</style>
 
 <script is:inline>
   const leadForm = document.querySelector('#lead-form');
