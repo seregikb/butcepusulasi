@@ -1,8 +1,19 @@
+---
+import { FORM_STARTED_AT_FIELD, HONEYPOT_FIELD } from '@/data/form-guard';
+---
+
 <div
   class="honeypot-field"
   style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"
   aria-hidden="true"
 >
-  <label for="website">Bu alanı boş bırakın</label>
-  <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  <label for={HONEYPOT_FIELD}>Bu alanı boş bırakın</label>
+  <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabindex="-1" autocomplete="new-password" data-honeypot />
 </div>
+<input name={FORM_STARTED_AT_FIELD} type="hidden" value="" data-form-started-at />
+
+<script is:inline>
+  document.querySelectorAll('[data-form-started-at]').forEach((input) => {
+    if (input instanceof HTMLInputElement && !input.value) input.value = String(Date.now());
+  });
+</script>

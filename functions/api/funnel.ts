@@ -1,4 +1,4 @@
-import { funnelKey, isFunnelEvent, utcDate, type FunnelKv } from '../lib/funnel';
+import { incrementFunnelEvent, isFunnelEvent, type FunnelKv } from '../lib/funnel';
 
 interface PagesContext {
   request: Request;
@@ -9,16 +9,8 @@ interface PagesContext {
   };
 }
 
-const RETENTION_SECONDS = 7_776_000;
-
 function empty(status: number): Response {
   return new Response(null, { status, headers: { 'Cache-Control': 'no-store' } });
-}
-
-async function increment(store: FunnelKv, key: string): Promise<void> {
-  const current = Number.parseInt(await store.get(key) || '0', 10);
-  const next = Number.isSafeInteger(current) && current >= 0 ? current + 1 : 1;
-  await store.put(key, String(next), { expirationTtl: RETENTION_SECONDS });
 }
 
 export async function onRequestPost({ request, env, waitUntil }: PagesContext): Promise<Response> {
@@ -34,6 +26,6 @@ export async function onRequestPost({ request, env, waitUntil }: PagesContext): 
   if (!isFunnelEvent(event)) return empty(400);
   if (!env.LEAD_FAILURES) return empty(404);
 
-  waitUntil(increment(env.LEAD_FAILURES, funnelKey(utcDate(), event)));
+  waitUntil(incrementFunnelEvent(env.LEAD_FAILURES, event));
   return empty(204);
 }

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { onRequestPost } from '../functions/api/conversion';
+import { FORM_STARTED_AT_FIELD, HONEYPOT_FIELD } from '../src/data/form-guard';
 
 function leadForm(overrides: Record<string, string> = {}): FormData {
   const values = {
@@ -11,7 +12,8 @@ function leadForm(overrides: Record<string, string> = {}): FormData {
     telefon: '+905301112233',
     tblci: '',
     creo: '',
-    website: '',
+    [HONEYPOT_FIELD]: '',
+    [FORM_STARTED_AT_FIELD]: String(Date.now() - 5_000),
     processing_consent: 'on',
     ...overrides,
   };
@@ -50,6 +52,23 @@ function env(overrides: Record<string, unknown> = {}) {
 
 function partnerSuccessResponse(): Response {
   return new Response(JSON.stringify({ result: true, code: 'SUCCESS', message: 'CREATED' }), { status: 200 });
+}
+
+function trackedStore() {
+  const values = new Map<string, string>();
+  return {
+    values,
+    get: vi.fn(async (key: string) => values.get(key) ?? null),
+    put: vi.fn(async (key: string, value: string) => { values.set(key, value); }),
+  };
+}
+
+function backgroundTasks() {
+  const tasks: Promise<unknown>[] = [];
+  return {
+    waitUntil: (promise: Promise<unknown>) => { tasks.push(promise); },
+    flush: () => Promise.all(tasks),
+  };
 }
 
 afterEach(() => {
@@ -109,13 +128,16 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('returns fake success for the honeypot without forwarding or logging', async () => {
+  it('returns fake success only for a filled honeypot submitted implausibly fast', async () => {
     const fetchMock = vi.fn();
     const failureStore = { put: vi.fn() };
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
-      request: request(leadForm({ website: 'spam.example' })),
+      request: request(leadForm({
+        [HONEYPOT_FIELD]: 'spam.example',
+        [FORM_STARTED_AT_FIELD]: String(Date.now()),
+      })),
       env: env({ LEAD_FAILURES: failureStore }),
       waitUntil: vi.fn(),
     });
@@ -124,6 +146,113 @@ describe('lead conversion endpoint', () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(failureStore.put).not.toHaveBeenCalled();
+  });
+
+  it('delivers a filled honeypot submitted at human speed', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({
+        [HONEYPOT_FIELD]: 'autofilled-value',
+        [FORM_STARTED_AT_FIELD]: String(Date.now() - 5_000),
+      })),
+      env: env(),
+      waitUntil: vi.fn(),
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('counts a fast honeypot rejection server-side without contacting the partner', async () => {
+    const fetchMock = vi.fn();
+    const store = trackedStore();
+    const background = backgroundTasks();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({
+        [HONEYPOT_FIELD]: 'filled',
+        [FORM_STARTED_AT_FIELD]: String(Date.now()),
+      })),
+      env: env({ LEAD_FAILURES: store }),
+      waitUntil: background.waitUntil,
+    });
+    await background.flush();
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect([...store.values.entries()].filter(([key]) => key.endsWith(':honeypot_rejected'))).toHaveLength(1);
+    expect([...store.values.values()]).toContain('1');
+  });
+
+  it('counts partner success and keeps the Taboola postback after acceptance', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(partnerSuccessResponse())
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const store = trackedStore();
+    const background = backgroundTasks();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ tblci: 'counter-click', creo: 'counter-creo' })),
+      env: env({
+        LEAD_FAILURES: store,
+        TABOOLA_S2S_ENDPOINT: 'https://taboola.example/postback',
+        TABOOLA_EVENT_NAME: 'lead',
+      }),
+      waitUntil: background.waitUntil,
+    });
+    await background.flush();
+
+    expect(response.status).toBe(200);
+    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://taboola.example/postback?click-id=counter-click&name=lead');
+    expect([...store.values.entries()].filter(([key]) => key.endsWith(':delivery_success'))).toHaveLength(1);
+  });
+
+  it('counts duplicate and failed partner outcomes without personal counter data', async () => {
+    const duplicateStore = trackedStore();
+    const duplicateBackground = backgroundTasks();
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      result: false,
+      code: 'ERROR',
+      message: 'DUPLICATE',
+    }), { status: 200 })));
+
+    const duplicate = await onRequestPost({
+      request: request(leadForm()),
+      env: env({ LEAD_FAILURES: duplicateStore }),
+      waitUntil: duplicateBackground.waitUntil,
+    });
+    await duplicateBackground.flush();
+    expect(duplicate.status).toBe(200);
+    expect([...duplicateStore.values.entries()].filter(([key]) => key.endsWith(':delivery_duplicate'))).toHaveLength(1);
+
+    const failureStore = trackedStore();
+    const failureBackground = backgroundTasks();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      result: false,
+      code: 'ERROR',
+      message: 'INVALID',
+    }), { status: 200 })));
+    const failed = await onRequestPost({
+      request: request(leadForm()),
+      env: env({ LEAD_FAILURES: failureStore }),
+      waitUntil: failureBackground.waitUntil,
+    });
+    await failureBackground.flush();
+    expect(failed.status).toBe(502);
+    expect([...failureStore.values.entries()].filter(([key]) => key.endsWith(':delivery_failed'))).toHaveLength(1);
+    expect([...failureStore.values.keys()].some((key) => key.startsWith('failed-leads/'))).toBe(true);
+
+    for (const store of [duplicateStore, failureStore]) {
+      const counters = [...store.values.entries()].filter(([key]) => key.startsWith('funnel:'));
+      expect(counters.every(([key, value]) => /^funnel:\d{4}-\d{2}-\d{2}:[a-z_]+$/.test(key) && /^\d+$/.test(value))).toBe(true);
+    }
+    expect(infoSpy).toHaveBeenCalled();
   });
 
   it('posts mapped JSON first and then sends an encoded Taboola conversion', async () => {
@@ -502,7 +631,7 @@ describe('lead conversion endpoint', () => {
       message: {
         EMAIL: 'hidden@example.com', phone: '+905301112233', name: 'Ayşe', firstName: 'Ayşe', lastName: 'Yılmaz',
         ad: 'Ayşe', soyad: 'Yılmaz', eposta: 'ayse@example.com', telefon: '+905301112233',
-        hane_buyuklugu: 'private', hedef: 'private', processing_consent: 'on', website: 'private',
+        hane_buyuklugu: 'private', hedef: 'private', processing_consent: 'on', bp_guard: 'private',
         nested: [{ Email: 'hidden@example.com', detail: 'AYŞE YILMAZ ayse@example.com +90 530 111 22 33' }],
         serialized: JSON.stringify({ firstname: 'Ayşe', reason: 'INVALID' }),
         reason: 'INVALID',

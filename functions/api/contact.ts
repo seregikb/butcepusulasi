@@ -1,3 +1,5 @@
+import { shouldRejectHoneypot } from '../../src/data/form-guard';
+
 interface PagesContext {
   request: Request;
   env: {
@@ -14,7 +16,7 @@ function json(data: Record<string, unknown>, status = 200): Response {
 
 export async function onRequestPost({ request, env }: PagesContext): Promise<Response> {
   const form = await request.formData();
-  if (String(form.get('website') || '')) return json({ ok: true });
+  if (shouldRejectHoneypot(form)) return json({ ok: true });
 
   const name = String(form.get('name') || '').trim();
   const email = String(form.get('email') || '').trim();

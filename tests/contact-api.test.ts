@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { onRequestPost } from '../functions/api/contact';
+import { FORM_STARTED_AT_FIELD, HONEYPOT_FIELD } from '../src/data/form-guard';
 
 function contactForm(overrides: Record<string, string> = {}): FormData {
   const form = new FormData();
@@ -7,7 +8,8 @@ function contactForm(overrides: Record<string, string> = {}): FormData {
     name: 'Ayşe Yılmaz',
     email: 'ayse@example.com',
     message: 'Bir içerik düzeltmesi bildirmek istiyorum.',
-    website: '',
+    [HONEYPOT_FIELD]: '',
+    [FORM_STARTED_AT_FIELD]: String(Date.now() - 5_000),
     ...overrides,
   };
   for (const [name, value] of Object.entries(values)) form.set(name, value);
@@ -29,7 +31,10 @@ describe('contact endpoint', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await onRequestPost({
-      request: request(contactForm({ website: 'spam.example' })),
+      request: request(contactForm({
+        [HONEYPOT_FIELD]: 'spam.example',
+        [FORM_STARTED_AT_FIELD]: String(Date.now()),
+      })),
       env: {},
     });
 

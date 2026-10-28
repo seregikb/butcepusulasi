@@ -172,15 +172,18 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
   if (leadForm instanceof HTMLFormElement) leadForm.noValidate = true;
 
   const sentFunnelEvents = new Set();
-  function honeypotFilled() {
+  function honeypotLooksAutomated() {
     if (!(leadForm instanceof HTMLFormElement)) return false;
-    const honeypot = leadForm.elements.namedItem('website');
-    return honeypot instanceof HTMLInputElement && Boolean(honeypot.value);
+    const honeypot = leadForm.querySelector('[data-honeypot]');
+    const startedAt = leadForm.querySelector('[data-form-started-at]');
+    if (!(honeypot instanceof HTMLInputElement) || !(startedAt instanceof HTMLInputElement) || !honeypot.value.trim()) return false;
+    const elapsed = Date.now() - Number.parseInt(startedAt.value, 10);
+    return Number.isFinite(elapsed) && elapsed >= 0 && elapsed < 2000;
   }
 
-  function recordFunnelEvent(name) {
-    if (!enabled || sentFunnelEvents.has(name) || honeypotFilled()) return;
-    sentFunnelEvents.add(name);
+  function recordFunnelEvent(name, once = true) {
+    if (!enabled || (once && sentFunnelEvents.has(name)) || honeypotLooksAutomated()) return;
+    if (once) sentFunnelEvents.add(name);
     fetch('/api/funnel', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -353,9 +356,12 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
   leadForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(leadForm instanceof HTMLFormElement) || !(leadStatus instanceof HTMLElement)) return;
-    if (!validateAndFocus()) return;
+    recordFunnelEvent('submit_attempt', false);
+    if (!validateAndFocus()) {
+      recordFunnelEvent('validation_blocked', false);
+      return;
+    }
     recordFunnelEvent('consent_tick');
-    recordFunnelEvent('submit_attempt');
     leadButton.disabled = true;
     leadStatus.textContent = 'Bilgiler gönderiliyor…';
     try {

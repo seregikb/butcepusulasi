@@ -43,11 +43,6 @@ const contactFormEnabled = import.meta.env.PUBLIC_CONTACT_FORM_ENABLED === 'true
     if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
     if (!form.reportValidity()) return;
     const data = new FormData(form);
-    if (String(data.get('website') || '')) {
-      form.reset();
-      status.textContent = 'Mesajınız gönderildi. Teşekkür ederiz.';
-      return;
-    }
     const button = form.querySelector('button[type="submit"]');
     if (button instanceof HTMLButtonElement) button.disabled = true;
     status.textContent = 'Mesaj gönderiliyor…';

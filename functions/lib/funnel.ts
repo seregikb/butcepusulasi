@@ -5,6 +5,11 @@ export const FUNNEL_EVENTS = [
   'step2_focus',
   'consent_tick',
   'submit_attempt',
+  'validation_blocked',
+  'honeypot_rejected',
+  'delivery_failed',
+  'delivery_duplicate',
+  'delivery_success',
   'callout_answer',
   'callout_submit',
 ] as const;
@@ -26,4 +31,13 @@ export function funnelKey(date: string, event: FunnelEvent): string {
 
 export function utcDate(date = new Date()): string {
   return date.toISOString().slice(0, 10);
+}
+
+export const FUNNEL_RETENTION_SECONDS = 7_776_000;
+
+export async function incrementFunnelEvent(store: FunnelKv, event: FunnelEvent, date = utcDate()): Promise<void> {
+  const key = funnelKey(date, event);
+  const current = Number.parseInt(await store.get(key) || '0', 10);
+  const next = Number.isSafeInteger(current) && current >= 0 ? current + 1 : 1;
+  await store.put(key, String(next), { expirationTtl: FUNNEL_RETENTION_SECONDS });
 }

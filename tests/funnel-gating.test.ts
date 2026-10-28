@@ -159,6 +159,10 @@ describe('lead funnel route gating', () => {
     expect(enabled.routeHtml['butce-plani']).not.toMatch(/(?<!safeStorage\.)localStorage\.(?:getItem|setItem)/);
     expect(enabled.routeHtml['butce-plani']).toContain('<form id="lead-form" name="butce-plani"');
     expect(enabled.routeHtml['butce-plani']).toContain('value="+90 "');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="bp_guard_7c1"');
+    expect(enabled.routeHtml['butce-plani']).toContain('autocomplete="new-password"');
+    expect(enabled.routeHtml['butce-plani']).toContain('name="bp_started_4d2" type="hidden"');
+    expect(enabled.routeHtml['butce-plani']).not.toContain('name="website"');
     expect(enabled.anchorPages['butce-plani']).toHaveLength((articleSlugs.length * 5) - interactiveCalloutSlugs.length);
     expect(new Set(enabled.anchorPages['butce-plani'])).toEqual(
       new Set(articleSlugs.map((slug) => `blog/${slug}/index.html`)),

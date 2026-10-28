@@ -1,3 +1,6 @@
+import { incrementFunnelEvent, type FunnelEvent, type FunnelKv } from '../lib/funnel';
+import { HONEYPOT_FIELD, shouldRejectHoneypot } from '../../src/data/form-guard';
+
 interface PagesContext {
   request: Request;
   waitUntil(promise: Promise<unknown>): void;
@@ -9,6 +12,7 @@ interface PagesContext {
     TABOOLA_S2S_ENDPOINT?: string;
     TABOOLA_EVENT_NAME?: string;
     LEAD_FAILURES?: {
+      get?(key: string): Promise<string | null>;
       put(key: string, value: string, options: { expirationTtl: number }): Promise<void>;
     };
   };
@@ -54,8 +58,8 @@ async function readResponseBody(response: Response): Promise<string> {
 
 // Only partner code/message may cross this boundary; never log a raw body or error.
 function safePartnerDiagnostic(value: string, form: FormData): string {
-  const personalKey = /email|phone|name|soyad|eposta|telefon|^ad$|hane_buyuklugu|hedef|processing_consent|website/i;
-  const submittedValues = ['ad', 'soyad', 'eposta', 'telefon', 'hane_buyuklugu', 'hedef', 'processing_consent', 'website']
+  const personalKey = /email|phone|name|soyad|eposta|telefon|^ad$|hane_buyuklugu|hedef|processing_consent|bp_guard/i;
+  const submittedValues = ['ad', 'soyad', 'eposta', 'telefon', 'hane_buyuklugu', 'hedef', 'processing_consent', HONEYPOT_FIELD]
     .flatMap((field) => form.getAll(field).flatMap((item) => {
       const text = String(item).trim();
       return field === 'ad' || field === 'soyad' ? [text, ...text.split(/\s+/)] : [text];
@@ -152,11 +156,19 @@ async function sendTaboolaConversion(endpoint: string, eventName: string, tblci:
   }
 }
 
+function recordServerEvent(context: PagesContext, event: FunnelEvent): void {
+  if (!context.env.LEAD_FAILURES || typeof context.env.LEAD_FAILURES.get !== 'function') return;
+  context.waitUntil(incrementFunnelEvent(context.env.LEAD_FAILURES as FunnelKv, event).catch(() => undefined));
+}
+
 export async function onRequestPost(context: PagesContext): Promise<Response> {
   const { request, env } = context;
   if (env.PUBLIC_LEAD_FUNNEL_ENABLED !== 'true') return result(request, { ok: false, message: 'Bulunamadı.' }, 404);
   const form = await request.formData();
-  if (String(form.get('website') || '')) return result(request, { ok: true });
+  if (shouldRejectHoneypot(form)) {
+    recordServerEvent(context, 'honeypot_rejected');
+    return result(request, { ok: true });
+  }
 
   const required = ['ad', 'soyad', 'hane_buyuklugu', 'hedef', 'processing_consent'];
   if (required.some((field) => !form.get(field))) return result(request, { ok: false, message: 'Eksik alan.' }, 400);
@@ -192,6 +204,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
       body: JSON.stringify(partnerPayload),
     });
   } catch {
+    recordServerEvent(context, 'delivery_failed');
     await storeFailedLead(env.LEAD_FAILURES, partnerPayload, form, {});
     return result(request, { ok: false, message: 'Aktarım başarısız.' }, 502);
   }
@@ -204,6 +217,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   const duplicate = response.ok && partnerResponse?.result === false && downstreamMessage === 'DUPLICATE';
 
   if (duplicate) {
+    recordServerEvent(context, 'delivery_duplicate');
     console.info(JSON.stringify({
       downstreamStatus: response.status,
       downstreamCode: safePartnerDiagnostic(downstreamCode, form),
@@ -215,6 +229,7 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   }
 
   if (!accepted) {
+    recordServerEvent(context, 'delivery_failed');
     await storeFailedLead(
       env.LEAD_FAILURES,
       partnerPayload,
@@ -233,6 +248,8 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   if (tblci && taboolaEndpoint && taboolaEventName) {
     context.waitUntil(sendTaboolaConversion(taboolaEndpoint, taboolaEventName, tblci));
   }
+
+  recordServerEvent(context, 'delivery_success');
 
   return result(request, { ok: true });
 }

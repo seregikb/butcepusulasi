@@ -23,6 +23,24 @@ function eventRequest(event: string): Request {
 afterEach(() => vi.restoreAllMocks());
 
 describe('cookieless funnel counter endpoint', () => {
+  it('keeps the report events in diagnostic order', () => {
+    expect(FUNNEL_EVENTS).toEqual([
+      'form_view',
+      'step1_answer',
+      'step1_complete',
+      'step2_focus',
+      'consent_tick',
+      'submit_attempt',
+      'validation_blocked',
+      'honeypot_rejected',
+      'delivery_failed',
+      'delivery_duplicate',
+      'delivery_success',
+      'callout_answer',
+      'callout_submit',
+    ]);
+  });
+
   it('is gated and validates the exact event allowlist', async () => {
     const store = kv();
     const disabled = await onRequestPost({
@@ -142,6 +160,9 @@ describe('protected funnel report', () => {
     expect(html).toContain(`<svg role="img" aria-label="${FUNNEL_EVENTS.length} aşamalı funnel grafiği"`);
     expect(html).toContain('En büyük düşüş');
     expect(html).toContain('<tfoot><tr><th scope="row">Toplam</th>');
+    const eventPositions = FUNNEL_EVENTS.map((event) => html.indexOf(`>${event}</text>`));
+    expect(eventPositions.every((position) => position >= 0)).toBe(true);
+    expect(eventPositions).toEqual([...eventPositions].sort((a, b) => a - b));
     expect(html.match(/<tbody><tr/g)).toHaveLength(1);
     expect(html.match(/<tbody>[\s\S]*?<\/tbody>/)?.[0].match(/<tr>/g)).toHaveLength(7);
     expect(html).not.toMatch(/<script|https:\/\//i);
