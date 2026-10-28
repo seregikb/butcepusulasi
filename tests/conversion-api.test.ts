@@ -165,6 +165,32 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
+  it.each([
+    ['absent', undefined],
+    ['empty', ''],
+    ['non-numeric', 'not-a-timestamp'],
+  ])('delivers a filled honeypot when its timestamp is %s', async (_label, timestamp) => {
+    const fetchMock = vi.fn().mockResolvedValue(partnerSuccessResponse());
+    const store = trackedStore();
+    const background = backgroundTasks();
+    vi.stubGlobal('fetch', fetchMock);
+    const form = leadForm({ [HONEYPOT_FIELD]: 'autofilled-value' });
+    if (timestamp === undefined) form.delete(FORM_STARTED_AT_FIELD);
+    else form.set(FORM_STARTED_AT_FIELD, timestamp);
+
+    const response = await onRequestPost({
+      request: request(form),
+      env: env({ LEAD_FAILURES: store }),
+      waitUntil: background.waitUntil,
+    });
+    await background.flush();
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect([...store.values.keys()].some((key) => key.endsWith(':honeypot_rejected'))).toBe(false);
+    expect([...store.values.keys()].some((key) => key.endsWith(':delivery_success'))).toBe(true);
+  });
+
   it('counts a fast honeypot rejection server-side without contacting the partner', async () => {
     const fetchMock = vi.fn();
     const store = trackedStore();

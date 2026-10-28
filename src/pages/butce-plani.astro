@@ -361,7 +361,6 @@ const defaultDescription = 'Hane büyüklüğünüzü ve hedefinizi seçin; 12 a
       recordFunnelEvent('validation_blocked', false);
       return;
     }
-    recordFunnelEvent('consent_tick');
     leadButton.disabled = true;
     leadStatus.textContent = 'Bilgiler gönderiliyor…';
     try {
