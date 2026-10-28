@@ -75,17 +75,23 @@ function renderChart(totals: Record<FunnelEvent, number>): string {
 }
 
 function renderTable(rows: DailyRow[], totals: Record<FunnelEvent, number>): string {
-  const headers = FUNNEL_EVENTS.flatMap((event, index) => index === 0 ? [`<th>${event}</th>`] : [`<th>${event}</th>`, '<th>%</th>']).join('');
+  const hasPercentage = (event: FunnelEvent, index: number) => index > 0 && event !== 'callout_answer' && event !== 'callout_submit';
+  const headers = FUNNEL_EVENTS.flatMap((event, index) => hasPercentage(event, index)
+    ? [`<th scope="col">${event}</th>`, `<th scope="col" aria-label="${event} önceki aşama yüzdesi">%</th>`]
+    : [`<th scope="col">${event}</th>`]).join('');
+  const columns = FUNNEL_EVENTS.flatMap((event, index) => hasPercentage(event, index)
+    ? ['<col class="count-column">', '<col class="percentage-column">']
+    : ['<col class="count-column">']).join('');
   const cells = (counts: Record<FunnelEvent, number>) => FUNNEL_EVENTS.flatMap((event, index) => {
-    if (index === 0) return [`<td>${counts[event]}</td>`];
+    if (!hasPercentage(event, index)) return [`<td>${counts[event]}</td>`];
     return [`<td>${counts[event]}</td>`, `<td>${percentage(counts[event], counts[FUNNEL_EVENTS[index - 1]])}</td>`];
   }).join('');
   const body = rows.map((row) => `<tr><th scope="row">${row.date}</th>${cells(row.counts)}</tr>`).join('');
-  return `<section><h2>Günlük sonuçlar</h2><div class="table-wrap"><table><thead><tr><th>Tarih</th>${headers}</tr></thead><tbody>${body}</tbody><tfoot><tr><th scope="row">Toplam</th>${cells(totals)}</tr></tfoot></table></div></section>`;
+  return `<section><h2>Günlük sonuçlar</h2><div class="table-wrap"><table><colgroup><col class="date-column">${columns}</colgroup><thead><tr><th scope="col">Tarih</th>${headers}</tr></thead><tbody>${body}</tbody><tfoot><tr><th scope="row">Toplam</th>${cells(totals)}</tr></tfoot></table></div></section>`;
 }
 
 function renderPage(days: number, rows: DailyRow[], totals: Record<FunnelEvent, number>): string {
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Funnel raporu · ${days} gün</title><style>html{font-family:system-ui,sans-serif;color:#202124;background:#f7f7f5}body{max-width:72rem;margin:0 auto;padding:1rem}h1,h2{margin:0 0 1rem}section+section{margin-top:2rem}svg{display:block;width:100%;max-width:42rem;height:auto;background:#fff;border:1px solid #d5d7da}.track{fill:#e5e7eb}.bar{fill:#476b63}.event{font-size:13px;font-weight:700;fill:#202124}.value{font-size:12px;fill:#4b5563}.table-wrap{max-width:100%;overflow-x:auto}table{width:max-content;min-width:100%;border-collapse:collapse;background:#fff;font-size:.8rem}th,td{padding:.55rem .65rem;border:1px solid #d5d7da;text-align:right;white-space:nowrap}th:first-child,td:first-child{position:sticky;left:0;background:#fff;text-align:left;z-index:2;min-width:6.5rem}th:nth-child(2),td:nth-child(2){position:sticky;left:7.8rem;background:#fff;z-index:1;min-width:5.5rem}thead th,tfoot th,tfoot td{font-weight:700;background:#eef0ed}</style></head><body>${renderChart(totals)}${renderTable(rows, totals)}</body></html>`;
+  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Funnel raporu · ${days} gün</title><style>html{font-family:system-ui,sans-serif;color:#202124;background:#f7f7f5}body{margin:0;padding:.75rem}h1,h2{margin:0 0 1rem}section+section{margin-top:2rem}svg{display:block;width:100%;max-width:42rem;height:auto;background:#fff;border:1px solid #d5d7da}.track{fill:#e5e7eb}.bar{fill:#476b63}.event{font-size:13px;font-weight:700;fill:#202124}.value{font-size:12px;fill:#4b5563}.table-wrap{max-width:100%;max-height:70vh;overflow:auto;border:1px solid #d5d7da;background:#fff}table{width:100%;min-width:78rem;border-collapse:separate;border-spacing:0;table-layout:fixed;background:#fff;font-size:.7rem;font-variant-numeric:tabular-nums}.date-column{width:6rem}.count-column{width:3.4rem}.percentage-column{width:2.5rem}th,td{padding:.4rem .25rem;border-right:1px solid #d5d7da;border-bottom:1px solid #d5d7da;text-align:right;white-space:nowrap}thead th{position:sticky;top:0;z-index:3;padding:.45rem .2rem;background:#eef0ed;white-space:normal;overflow-wrap:anywhere;vertical-align:bottom}th:first-child,td:first-child{position:sticky;left:0;z-index:2;text-align:left}thead th:first-child{z-index:4;background:#eef0ed}tbody th,tbody td{background:#fff}tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:#f7f7f5}tfoot th,tfoot td{font-weight:700;background:#eef0ed}</style></head><body>${renderChart(totals)}${renderTable(rows, totals)}</body></html>`;
 }
 
 export async function onRequestGet({ request, env }: PagesContext): Promise<Response> {
