@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { onRequestPost } from '../functions/api/conversion';
 import { FORM_STARTED_AT_FIELD, HONEYPOT_FIELD } from '../src/data/form-guard';
 
+const LONG_TBLCI = 'test_tblAP4I6wAGYCiD_-onP-b_ZvcRycjp2AoPT8PKIfApYs2Azg49kO6ZjwhCyoH8g0tvKppg0KLKgf0AASwiyoH8SCkE0YjJUWFZYX3EY0tvKppg0TA';
+
 function leadForm(overrides: Record<string, string> = {}): FormData {
   const values = {
     ad: 'Ayşe',
@@ -307,6 +309,7 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock.mock.calls[0]?.[1]).toEqual({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: expect.any(AbortSignal),
       body: JSON.stringify({
         email: 'ayse@example.com',
         phone: '+905301112233',
@@ -317,7 +320,6 @@ describe('lead conversion endpoint', () => {
         creo: 'creative-9',
         marker: 'marker-42',
         offer: 'offer-7',
-        click_id: 'click id&1',
         ip: '203.0.113.7',
         description: '',
         domain: 'butcepusulasi.com',
@@ -373,7 +375,6 @@ describe('lead conversion endpoint', () => {
       creo: 'creative-9',
       marker: 'marker-42',
       offer: 'offer-7',
-      click_id: 'click id&1',
       ip: '203.0.113.7',
       description: '',
       domain: 'butcepusulasi.com',
@@ -482,8 +483,10 @@ describe('lead conversion endpoint', () => {
     expect(key).toMatch(/^failed-leads\/\d{4}-\d{2}-\d{2}T/);
     const stored = JSON.parse(serialized);
     expect(failureStore.put.mock.calls[0]?.[2]).toEqual({ expirationTtl: 2592000 });
-    expect(Object.keys(stored).sort()).toEqual(['partnerPayload', 'processing_consent', 'qualificationAnswers', 'timestamp']);
+    expect(Object.keys(stored).sort()).toEqual(['click_id', 'partnerPayload', 'processing_consent', 'qualificationAnswers', 'timestamp']);
     expect(stored.partnerPayload).toEqual(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string));
+    expect(stored.partnerPayload).not.toHaveProperty('click_id');
+    expect(stored.click_id).toBe('recover-me');
     expect(stored.qualificationAnswers).toEqual({ hane_buyuklugu: '2 kişi', hedef: 'Harcamaları düzenlemek' });
     expect(stored.processing_consent).toBe(true);
     expect(stored.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
@@ -545,29 +548,68 @@ describe('lead conversion endpoint', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(waitUntil).not.toHaveBeenCalled();
     const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
-    expect(stored.partnerPayload.click_id).toBe('rejected-click');
+    expect(stored.partnerPayload).not.toHaveProperty('click_id');
+    expect(stored.click_id).toBe('rejected-click');
     expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string).downstreamMessage).toBe('{}');
   });
 
-  it('rejects a non-JSON partner response without firing Taboola', async () => {
-    const failureStore = { put: vi.fn().mockResolvedValue(undefined) };
-    const fetchMock = vi.fn().mockResolvedValue(new Response('<html>bad gateway</html>', { status: 200 }));
+  it.each([
+    ['malformed JSON', '{"result":'],
+    ['HTML', '<html>bad gateway</html>'],
+    ['an empty body', ''],
+  ])('returns controlled JSON and one failure event for %s', async (_label, partnerBody) => {
+    const failureStore = trackedStore();
+    const background = backgroundTasks();
+    const fetchMock = vi.fn().mockResolvedValue(new Response(partnerBody, { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const waitUntil = vi.fn();
 
     const response = await onRequestPost({
       request: request(leadForm({ tblci: 'malformed-click' })),
       env: env({ LEAD_FAILURES: failureStore }),
-      waitUntil,
+      waitUntil: background.waitUntil,
     });
+    await background.flush();
 
     expect(response.status).toBe(502);
+    expect(response.headers.get('Content-Type')).toBe('application/json; charset=utf-8');
+    await expect(response.json()).resolves.toEqual({ ok: false, message: 'Aktarım başarısız.' });
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(waitUntil).not.toHaveBeenCalled();
-    const stored = JSON.parse(failureStore.put.mock.calls[0]?.[1] as string);
-    expect(stored.partnerPayload.click_id).toBe('malformed-click');
+    const counters = [...failureStore.values.entries()].filter(([key]) => key.startsWith('funnel:'));
+    expect(counters).toHaveLength(1);
+    expect(counters[0]?.[0]).toMatch(/:delivery_failed$/);
+    expect(counters[0]?.[1]).toBe('1');
+    const failureRecord = [...failureStore.values.entries()].find(([key]) => key.startsWith('failed-leads/'));
+    expect(failureRecord).toBeDefined();
+    const stored = JSON.parse(failureRecord?.[1] || '{}');
+    expect(stored.partnerPayload).not.toHaveProperty('click_id');
+    expect(stored.click_id).toBe('malformed-click');
     expect(JSON.parse(errorSpy.mock.calls[0]?.[0] as string)).toMatchObject({ downstreamStatus: 200, downstreamCode: '', downstreamMessage: '' });
+  });
+
+  it('sends the full long tblci only to Taboola, URL-encoded and untruncated', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(partnerSuccessResponse())
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const background = backgroundTasks();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await onRequestPost({
+      request: request(leadForm({ tblci: LONG_TBLCI })),
+      env: env({ TABOOLA_S2S_ENDPOINT: 'https://taboola.example/postback', TABOOLA_EVENT_NAME: 'lead event/1' }),
+      waitUntil: background.waitUntil,
+    });
+    await background.flush();
+
+    expect(response.status).toBe(200);
+    const partnerBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string);
+    expect(partnerBody).not.toHaveProperty('click_id');
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+      `https://taboola.example/postback?click-id=${encodeURIComponent(LONG_TBLCI)}&name=lead%20event%2F1`,
+    );
+    expect(decodeURIComponent(new URL(fetchMock.mock.calls[1]?.[0] as string).searchParams.get('click-id') || '')).toBe(LONG_TBLCI);
+    expect(infoSpy).toHaveBeenCalledWith(JSON.stringify({ event: 'taboola_s2s', status: 204, accepted: true, clickIdLength: 119 }));
   });
 
   it('stores the submission when the lead request has a network failure', async () => {

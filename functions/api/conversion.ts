@@ -1,6 +1,8 @@
 import { incrementFunnelEvent, type FunnelEvent, type FunnelKv } from '../lib/funnel';
 import { HONEYPOT_FIELD, shouldRejectHoneypot } from '../../src/data/form-guard';
 
+const PARTNER_TIMEOUT_MS = 10_000;
+
 interface PagesContext {
   request: Request;
   waitUntil(promise: Promise<unknown>): void;
@@ -113,12 +115,13 @@ async function storeFailedLead(
   store: PagesContext['env']['LEAD_FAILURES'],
   partnerPayload: Record<string, string>,
   form: FormData,
+  tblci: string,
   diagnostics: { downstreamStatus?: number; downstreamCode?: string; downstreamMessage?: string },
 ): Promise<void> {
   const timestamp = new Date().toISOString();
   const diagnostic = {
     ...diagnostics,
-    click_id: partnerPayload.click_id,
+    click_id: tblci,
     creo: partnerPayload.creo,
     timestamp,
   };
@@ -130,6 +133,7 @@ async function storeFailedLead(
   const record = {
     timestamp,
     partnerPayload,
+    click_id: tblci,
     qualificationAnswers: {
       hane_buyuklugu: String(form.get('hane_buyuklugu') || ''),
       hedef: String(form.get('hedef') || ''),
@@ -150,15 +154,37 @@ async function sendTaboolaConversion(endpoint: string, eventName: string, tblci:
   const url = `${endpoint}?click-id=${encodeURIComponent(tblci)}&name=${encodeURIComponent(eventName)}`;
   try {
     const response = await fetch(url);
-    if (!response.ok) console.error(JSON.stringify({ click_id: tblci, timestamp: new Date().toISOString() }));
+    if (!response.ok) {
+      console.error(JSON.stringify({ click_id: tblci, timestamp: new Date().toISOString() }));
+      return;
+    }
+    console.info(JSON.stringify({ event: 'taboola_s2s', status: response.status, accepted: true, clickIdLength: tblci.length }));
   } catch {
     console.error(JSON.stringify({ click_id: tblci, timestamp: new Date().toISOString() }));
   }
 }
 
+function queueBackground(context: PagesContext, promise: Promise<unknown>): void {
+  try {
+    context.waitUntil(promise.catch(() => undefined));
+  } catch { /* A background task must never invalidate the lead response. */ }
+}
+
 function recordServerEvent(context: PagesContext, event: FunnelEvent): void {
   if (!context.env.LEAD_FAILURES || typeof context.env.LEAD_FAILURES.get !== 'function') return;
-  context.waitUntil(incrementFunnelEvent(context.env.LEAD_FAILURES as FunnelKv, event).catch(() => undefined));
+  queueBackground(context, incrementFunnelEvent(context.env.LEAD_FAILURES as FunnelKv, event));
+}
+
+async function deliveryFailure(
+  context: PagesContext,
+  partnerPayload: Record<string, string>,
+  form: FormData,
+  tblci: string,
+  diagnostics: { downstreamStatus?: number; downstreamCode?: string; downstreamMessage?: string },
+): Promise<Response> {
+  recordServerEvent(context, 'delivery_failed');
+  await storeFailedLead(context.env.LEAD_FAILURES, partnerPayload, form, tblci, diagnostics);
+  return result(context.request, { ok: false, message: 'Aktarım başarısız.' }, 502);
 }
 
 export async function onRequestPost(context: PagesContext): Promise<Response> {
@@ -189,7 +215,6 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     creo: String(form.get('creo') || '').trim(),
     marker: env.PARTNER_MARKER || '',
     offer: env.PARTNER_OFFER || '',
-    click_id: tblci,
     ip: request.headers.get('CF-Connecting-IP') || '',
     description: '',
     domain: new URL(request.url).hostname,
@@ -197,20 +222,20 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   };
 
   let response: Response;
+  let partnerResponse: ReturnType<typeof parsePartnerResponse>;
   try {
     response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(partnerPayload),
+      signal: AbortSignal.timeout(PARTNER_TIMEOUT_MS),
     });
+    const downstreamBody = await readResponseBody(response);
+    partnerResponse = parsePartnerResponse(downstreamBody);
   } catch {
-    recordServerEvent(context, 'delivery_failed');
-    await storeFailedLead(env.LEAD_FAILURES, partnerPayload, form, {});
-    return result(request, { ok: false, message: 'Aktarım başarısız.' }, 502);
+    return deliveryFailure(context, partnerPayload, form, tblci, {});
   }
 
-  const downstreamBody = await readResponseBody(response);
-  const partnerResponse = parsePartnerResponse(downstreamBody);
   const downstreamCode = partnerResponse?.code || '';
   const downstreamMessage = partnerResponse?.message || '';
   const accepted = response.ok && partnerResponse?.result === true;
@@ -229,24 +254,23 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   }
 
   if (!accepted) {
-    recordServerEvent(context, 'delivery_failed');
-    await storeFailedLead(
-      env.LEAD_FAILURES,
+    return deliveryFailure(
+      context,
       partnerPayload,
       form,
+      tblci,
       {
         downstreamStatus: response.status,
         downstreamCode: safePartnerDiagnostic(downstreamCode, form),
         downstreamMessage: safePartnerDiagnostic(downstreamMessage, form),
       },
     );
-    return result(request, { ok: false, message: 'Aktarım başarısız.' }, 502);
   }
 
   const taboolaEndpoint = env.TABOOLA_S2S_ENDPOINT?.trim();
   const taboolaEventName = env.TABOOLA_EVENT_NAME?.trim();
   if (tblci && taboolaEndpoint && taboolaEventName) {
-    context.waitUntil(sendTaboolaConversion(taboolaEndpoint, taboolaEventName, tblci));
+    queueBackground(context, sendTaboolaConversion(taboolaEndpoint, taboolaEventName, tblci));
   }
 
   recordServerEvent(context, 'delivery_success');
